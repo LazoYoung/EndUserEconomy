@@ -1,8 +1,10 @@
-# ItemCurrency
-Convert your vault-based money into real item in Minecraft.
+# EndUserEconomy
+C:\Users\stark\AppData\Local\Microsoft\Windows\Explorer\iconcache_idx.db
+액세스가 거부되었습니다.
 
 ## Vault account
-This plugin has built-in 
+This plugin has built-in economy system. Also you can plug other economy plugins which are linked to Vault.
+The vault accounts are identical to bank accounts.
 
 ## Multiple currency
 
