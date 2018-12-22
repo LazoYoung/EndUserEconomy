@@ -10,6 +10,7 @@ public class Main extends JavaPlugin {
     @Override
     public void onEnable() {
         Arrays.stream(Economy.values()).forEach(this::loadEconomy);
+        getCommand("economy").setExecutor(new EconomyCommand());
     }
     
     private void loadEconomy(Economy type) {

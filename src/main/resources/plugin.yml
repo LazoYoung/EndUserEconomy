@@ -7,3 +7,8 @@ author: LazoYoung
 load: STARTUP
 softdepend:
 - Vault
+
+commands:
+  economy:
+    usage: Type /economy to see help.
+    aliases: eco

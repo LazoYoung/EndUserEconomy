@@ -3,6 +3,8 @@ package io.github.lazoyoung;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.plugin.ServicesManager;
 
 import javax.annotation.Nullable;
 
@@ -10,8 +12,12 @@ public class VaultEconomyHandler extends AbstractEconomyHandler {
     
     private net.milkbowl.vault.economy.Economy api;
     
-    private VaultEconomyHandler() {
-        api = Bukkit.getServicesManager().load(net.milkbowl.vault.economy.Economy.class);
+    public VaultEconomyHandler() throws InstantiationException {
+        RegisteredServiceProvider<net.milkbowl.vault.economy.Economy> provider = Bukkit.getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+        if (provider == null) {
+            throw new InstantiationException("Failed to load Vault API. Make sure you've installed the economy plugin linked to Vault.");
+        }
+        api = provider.getProvider();
     }
     
     @Override

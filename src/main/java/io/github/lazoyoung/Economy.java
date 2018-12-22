@@ -6,16 +6,16 @@ import javax.annotation.Nullable;
 
 public enum Economy {
     
-    VAULT_ECONOMY("Vault", VaultEconomyHandler.class, false),
+    VAULT("Vault", VaultEconomyHandler.class, false),
     GEMS_ECONOMY("GemsEconomy", GemsEconomyHandler.class, true);
     
     private String pluginName;
-    private Class classType;
+    private Class handlerClass;
     private boolean multiCurrency;
     
-    Economy(String pluginName, Class classType, boolean multiCurrency) {
+    Economy(String pluginName, Class handlerClass, boolean multiCurrency) {
         this.pluginName = pluginName;
-        this.classType = classType;
+        this.handlerClass = handlerClass;
         this.multiCurrency = multiCurrency;
     }
     
@@ -27,10 +27,9 @@ public enum Economy {
     EconomyHandler getHandler() {
         EconomyHandler val = null;
         try {
-            val = (EconomyHandler) classType.newInstance();
+            val = (EconomyHandler) handlerClass.newInstance();
         } catch (InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
-            Bukkit.getLogger().severe("Failed to load EconomyHandler.");
         }
         return val;
     }

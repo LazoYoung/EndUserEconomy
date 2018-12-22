@@ -22,14 +22,17 @@ public class EconomyCommand extends CommandData implements CommandExecutor {
                 selectCurrency(sender, args);
                 break;
             case "balance":
+                balance(sender, args);
                 break;
             case "deposit":
                 break;
             case "withdraw":
                 break;
+            default:
+                return false;
         }
         
-        return false;
+        return true;
     }
     
     private void selectCurrency(CommandSender sender, String[] args) {
@@ -65,6 +68,7 @@ public class EconomyCommand extends CommandData implements CommandExecutor {
                 currencySel.put(id, new Currency(Economy.valueOf(economy)));
             }
         } catch (IllegalArgumentException e) {
+            // TODO recognize invalid currency input
             sender.sendMessage(e.getMessage());
             return;
         }
