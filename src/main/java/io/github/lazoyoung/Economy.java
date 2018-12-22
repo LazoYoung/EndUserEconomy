@@ -1,7 +1,5 @@
 package io.github.lazoyoung;
 
-import org.bukkit.Bukkit;
-
 import javax.annotation.Nullable;
 
 public enum Economy {
@@ -23,8 +21,8 @@ public enum Economy {
         return pluginName;
     }
     
-    public @Nullable
-    EconomyHandler getHandler() {
+    @Nullable
+    public EconomyHandler getHandler() {
         EconomyHandler val = null;
         try {
             val = (EconomyHandler) handlerClass.newInstance();

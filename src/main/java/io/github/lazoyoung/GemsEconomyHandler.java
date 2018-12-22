@@ -41,4 +41,25 @@ public class GemsEconomyHandler extends AbstractEconomyHandler {
         }
         return new EconomyResponse(amount, api.getBalance(uuid), EconomyResponse.ResponseType.FAILURE, null);
     }
+    
+    @Override
+    public EconomyResponse setBalance(OfflinePlayer player, @Nullable String currency, double amount) {
+        if (hasAccount(player)) {
+            double bal = getBalance(player, currency);
+            double dif = amount - bal;
+            if (dif == 0) {
+                return new EconomyResponse(0, bal, EconomyResponse.ResponseType.SUCCESS, null);
+            }
+            if (dif > 0) {
+                return deposit(player, currency, dif);
+            }
+            return withdraw(player, currency, -dif);
+        }
+        return new EconomyResponse(0D, amount, EconomyResponse.ResponseType.FAILURE, "Account was not found.");
+    }
+    
+    @Override
+    public boolean isValidCurrency(String currency) {
+        return api.getCurrency(currency) != null;
+    }
 }

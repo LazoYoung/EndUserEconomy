@@ -1,24 +1,32 @@
 package io.github.lazoyoung;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 public class Currency {
     
     private Economy economy;
+    private EconomyHandler handler;
     private String currency;
     
-    public Currency(Economy economy) throws IllegalArgumentException {
+    public Currency(Economy economy, EconomyHandler handler) throws IllegalArgumentException {
         if (economy.hasMultiCurrency()) {
             throw new IllegalArgumentException("This economy has multiple currency. Please define currency name.");
         }
         this.economy = economy;
+        this.handler = handler;
     }
     
-    public Currency(Economy economy, String currency) {
+    public Currency(Economy economy, EconomyHandler handler, String currency) throws IllegalArgumentException {
         if (!economy.hasMultiCurrency()) {
             throw new IllegalArgumentException("This economy does not support multiple currency.");
         }
+        if (!handler.isValidCurrency(currency)) {
+            throw new IllegalArgumentException("Unknown currency: " + currency);
+        }
         this.economy = economy;
+        this.handler = handler;
         this.currency = currency.toLowerCase();
     }
     
@@ -26,8 +34,14 @@ public class Currency {
         return economy;
     }
     
+    @Nullable
     public String getCurrency() {
         return currency;
+    }
+    
+    @Nonnull
+    public EconomyHandler getEconomyHandler() {
+        return handler;
     }
     
     @Override

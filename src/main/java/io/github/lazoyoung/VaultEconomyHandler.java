@@ -4,7 +4,6 @@ import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.plugin.ServicesManager;
 
 import javax.annotation.Nullable;
 
@@ -38,5 +37,26 @@ public class VaultEconomyHandler extends AbstractEconomyHandler {
     @Override
     public EconomyResponse withdraw(OfflinePlayer player, @Nullable String currency, double amount) {
         return api.withdrawPlayer(player, amount);
+    }
+    
+    @Override
+    public EconomyResponse setBalance(OfflinePlayer player, @Nullable String currency, double amount) {
+        if (hasAccount(player)) {
+            double bal = api.getBalance(player);
+            double dif = amount - bal;
+            if (dif == 0) {
+                return new EconomyResponse(0, bal, EconomyResponse.ResponseType.SUCCESS, null);
+            }
+            if (dif > 0) {
+                return api.depositPlayer(player, dif);
+            }
+            return api.withdrawPlayer(player, -dif);
+        }
+        return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Account was not found.");
+    }
+    
+    @Override
+    public boolean isValidCurrency(String currency) {
+        return false;
     }
 }
