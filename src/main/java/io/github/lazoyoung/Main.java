@@ -9,21 +9,15 @@ public class Main extends JavaPlugin {
     
     @Override
     public void onEnable() {
-        Arrays.stream(EconomyType.values()).forEach(this::loadEconomy);
+        Arrays.stream(Economy.values()).forEach(this::loadEconomy);
     }
     
-    private void loadEconomy(EconomyType type) {
+    private void loadEconomy(Economy type) {
         String pluginName = type.getPluginName();
         Plugin plugin = getServer().getPluginManager().getPlugin(pluginName);
         
         if (plugin != null && plugin.isEnabled()) {
-            // TODO register economy systems in STARTUP phase
-            try {
-                EconomyAPI.register(type, type.getEconomyService());
-            } catch (IllegalAccessException | InstantiationException e) {
-                e.printStackTrace();
-                getLogger().severe("Failed to load economy \'" + type.getPluginName() + "\' while service instantiation.");
-            }
+            EconomyAPI.register(type, type.getHandler());
         }
     }
     
