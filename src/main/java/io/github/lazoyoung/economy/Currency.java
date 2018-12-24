@@ -1,4 +1,6 @@
-package io.github.lazoyoung;
+package io.github.lazoyoung.economy;
+
+import io.github.lazoyoung.economy.handler.EconomyHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

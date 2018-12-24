@@ -1,0 +1,8 @@
+database:
+  mysql:
+    jdbc-url: 'jdbc:mysql://localhost:3306/database'
+    username: ''
+    password: ''
+    tables:
+      bill: 'Bill'
+      bill_registry: 'BillRegistry'

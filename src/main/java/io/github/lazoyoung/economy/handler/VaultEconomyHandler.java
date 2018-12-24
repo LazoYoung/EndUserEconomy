@@ -1,4 +1,4 @@
-package io.github.lazoyoung;
+package io.github.lazoyoung.economy.handler;
 
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;

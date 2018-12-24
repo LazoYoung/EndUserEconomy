@@ -1,5 +1,8 @@
-package io.github.lazoyoung;
+package io.github.lazoyoung.command;
 
+import io.github.lazoyoung.economy.Currency;
+import io.github.lazoyoung.economy.Economy;
+import io.github.lazoyoung.economy.handler.EconomyHandler;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -15,6 +18,11 @@ public class EconomyCommand extends CommandData implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
+            sender.sendMessage(new String[] {
+                    "/economy select <economy> [currency]\n",
+                    "/economy balance [player]\n",
+                    "/economy <deposit/withdraw/set> <player> <amount>"
+            });
             return true;
         }
         

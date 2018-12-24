@@ -1,5 +1,8 @@
 package io.github.lazoyoung;
 
+import io.github.lazoyoung.economy.Economy;
+import io.github.lazoyoung.economy.handler.EconomyHandler;
+
 import java.util.HashMap;
 import java.util.Map;
 
