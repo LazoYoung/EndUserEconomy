@@ -19,7 +19,7 @@ public class BillFactory implements Bill {
     
     public Bill printNew(String origin) throws SQLException {
         
-        // TODO consider replacing id to UUID, due to reliability between YAML and MySQL record synchronization
+        // TODO consider replacing id to UUID, due to unreliable sync between YAML and MySQL
         Connection con = Database.getSource().getConnection();
         PreparedStatement insert = con.prepareStatement("INSERT INTO ? (id, economy, currency, unit, birth, origin)" +
                 " VALUES (NULL, ?, ?, ?, CURRENT_TIMESTAMP, ?);", Statement.RETURN_GENERATED_KEYS);
