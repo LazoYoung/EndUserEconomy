@@ -1,10 +1,12 @@
 package io.github.lazoyoung;
 
+import io.github.lazoyoung.bill.BillFactory;
 import io.github.lazoyoung.command.EconomyCommand;
 import io.github.lazoyoung.economy.Economy;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.sql.SQLException;
 import java.util.Arrays;
 
 public class Main extends JavaPlugin {

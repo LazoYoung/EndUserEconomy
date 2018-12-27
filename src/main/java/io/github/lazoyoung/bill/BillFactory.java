@@ -3,15 +3,14 @@ package io.github.lazoyoung.bill;
 import io.github.lazoyoung.DataType;
 import io.github.lazoyoung.Database;
 import io.github.lazoyoung.economy.Currency;
-import org.bukkit.configuration.file.FileConfiguration;
 
 import java.sql.*;
 
-public class BillFactory {
+public class BillFactory implements Bill {
 
     private Currency currency;
     private int unit;
-    private FileConfiguration config;
+    private int id;
     
     public BillFactory(Currency currency, int unit) {
         this.currency = currency;
@@ -19,6 +18,8 @@ public class BillFactory {
     }
     
     public Bill printNew(String origin) throws SQLException {
+        
+        // TODO consider replacing id to UUID, due to reliability between YAML and MySQL record synchronization
         Connection con = Database.getSource().getConnection();
         PreparedStatement insert = con.prepareStatement("INSERT INTO ? (id, economy, currency, unit, birth, origin)" +
                 " VALUES (NULL, ?, ?, ?, CURRENT_TIMESTAMP, ?);", Statement.RETURN_GENERATED_KEYS);
@@ -34,12 +35,31 @@ public class BillFactory {
         if (insert.executeUpdate() > 0) {
             ResultSet resultSet = insert.getGeneratedKeys();
             if (resultSet.next()) {
-                int id = resultSet.getInt(1);
-                return new Bill(this.currency, this.unit, id);
+                id = resultSet.getInt(1);
+                return this;
             }
             throw new SQLException("Unable to select the generated ID.");
         }
         throw new SQLException("Unable to insert a row.");
+    }
+    
+    public Bill getFromId(int id) throws SQLException {
+        // TODO implement this method
+    }
+    
+    @Override
+    public Currency getCurrency() {
+        return currency;
+    }
+    
+    @Override
+    public int getUnit() {
+        return unit;
+    }
+    
+    @Override
+    public int getId() {
+        return id;
     }
     
 }
