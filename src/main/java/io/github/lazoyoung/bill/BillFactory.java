@@ -18,10 +18,10 @@ public class BillFactory {
         this.unit = unit;
     }
     
-    public Bill printNew() throws SQLException {
+    public Bill printNew(String origin) throws SQLException {
         Connection con = Database.getSource().getConnection();
-        PreparedStatement insert = con.prepareStatement("INSERT INTO ? (id, economy, currency, unit)" +
-                " VALUES (NULL, ?, ?, ?);", Statement.RETURN_GENERATED_KEYS);
+        PreparedStatement insert = con.prepareStatement("INSERT INTO ? (id, economy, currency, unit, birth, origin)" +
+                " VALUES (NULL, ?, ?, ?, CURRENT_TIMESTAMP, ?);", Statement.RETURN_GENERATED_KEYS);
         String table = Database.getTableName(DataType.BILL);
         String economy = this.currency.getEconomy().toString();
         String currency = this.currency.getName();
@@ -29,6 +29,7 @@ public class BillFactory {
         insert.setString(2, economy);
         insert.setString(3, currency);
         insert.setInt(4, unit);
+        insert.setString(5, origin);
         
         if (insert.executeUpdate() > 0) {
             ResultSet resultSet = insert.getGeneratedKeys();

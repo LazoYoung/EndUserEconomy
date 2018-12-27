@@ -49,10 +49,12 @@ public class Database {
             String bill = getTableName(DataType.BILL);
             stmt.execute("SET NAMES 'utf8';");
             stmt.executeUpdate("CREATE TABLE IF NOT EXISTS " + bill + " (" +
-                    "id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'The unique ID for each bill.', " +
-                    "economy VARCHAR(30) NOT NULL COMMENT 'The economy plugin where this bill belongs to.', " +
-                    "currency VARCHAR(15) COMMENT 'Currency name. (Optional)', " +
-                    "unit INT NOT NULL" +
+                    "id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'The unique identifier.', " +
+                    "economy VARCHAR(30) NOT NULL COMMENT 'Identical to enums in Economy.java.', " +
+                    "currency VARCHAR(15) COMMENT 'This is null for those single-currency economies.', " +
+                    "unit INT NOT NULL, " +
+                    "birth TIMESTAMP, " +
+                    "origin VARCHAR(30) COMMENT 'Can be a player or the server.'" +
                     ");");
         } catch (SQLException e) {
             e.printStackTrace();
