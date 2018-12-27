@@ -12,3 +12,6 @@ commands:
   economy:
     usage: Type /economy to see help.
     aliases: eco
+  bill:
+    usage: Type /bill to see help.
+    aliases: [coin, papermoney]

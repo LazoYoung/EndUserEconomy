@@ -2,9 +2,11 @@ package io.github.lazoyoung;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
@@ -15,7 +17,7 @@ public class Database {
     private static HikariDataSource dataSource;
     private static Map<DataType, String> table;
     
-    static void init(FileConfiguration fileConfig) {
+    static void init(FileConfiguration fileConfig) throws SQLException {
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(fileConfig.getString("database.mysql.jdbc-url"));
         config.setUsername(fileConfig.getString("database.mysql.username"));
@@ -27,11 +29,14 @@ public class Database {
         dataSource = new HikariDataSource(config);
         table = new HashMap<>();
         for (String key : fileConfig.getConfigurationSection("database.mysql.tables").getKeys(false)) {
-            String[] keyParts = key.split(".");
-            DataType type = DataType.valueOf(keyParts[keyParts.length - 1].toUpperCase());
-            table.put(type, fileConfig.getString(key));
+            DataType type = DataType.valueOf(key.toUpperCase());
+            table.put(type, fileConfig.getString("database.mysql.tables." + key).toLowerCase());
         }
         initTables();
+    }
+    
+    static void shutdown() {
+        dataSource.close();
     }
     
     public static HikariDataSource getSource() {
@@ -46,16 +51,15 @@ public class Database {
         try {
             Connection con = getSource().getConnection();
             Statement stmt = con.createStatement();
-            String bill = getTableName(DataType.BILL);
-            stmt.execute("SET NAMES 'utf8';");
-            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS " + bill + " (" +
-                    "id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'The unique identifier.', " +
+            stmt.executeUpdate("CREATE TABLE IF NOT EXISTS " + getTableName(DataType.BILL) + " (" +
+                    "id binary(16) PRIMARY KEY, " +
                     "economy VARCHAR(30) NOT NULL COMMENT 'Identical to enums in Economy.java.', " +
                     "currency VARCHAR(15) COMMENT 'This is null for those single-currency economies.', " +
                     "unit INT NOT NULL, " +
                     "birth TIMESTAMP, " +
                     "origin VARCHAR(30) COMMENT 'Can be a player or the server.'" +
                     ");");
+            con.createStatement().execute("SET NAMES 'utf8';");
         } catch (SQLException e) {
             e.printStackTrace();
         }

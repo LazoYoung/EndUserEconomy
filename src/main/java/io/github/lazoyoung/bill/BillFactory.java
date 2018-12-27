@@ -3,14 +3,18 @@ package io.github.lazoyoung.bill;
 import io.github.lazoyoung.DataType;
 import io.github.lazoyoung.Database;
 import io.github.lazoyoung.economy.Currency;
+import org.bukkit.Bukkit;
+import org.bukkit.inventory.ItemStack;
 
 import java.sql.*;
+import java.util.UUID;
+import java.util.logging.Logger;
 
 public class BillFactory implements Bill {
 
     private Currency currency;
     private int unit;
-    private int id;
+    private UUID id;
     
     public BillFactory(Currency currency, int unit) {
         this.currency = currency;
@@ -19,23 +23,24 @@ public class BillFactory implements Bill {
     
     public Bill printNew(String origin) throws SQLException {
         
-        // TODO consider replacing id to UUID, due to unreliable sync between YAML and MySQL
+        Logger log = Bukkit.getLogger();
         Connection con = Database.getSource().getConnection();
-        PreparedStatement insert = con.prepareStatement("INSERT INTO ? (id, economy, currency, unit, birth, origin)" +
-                " VALUES (NULL, ?, ?, ?, CURRENT_TIMESTAMP, ?);", Statement.RETURN_GENERATED_KEYS);
+        con.createStatement().execute("SET @uuid = UUID()");
         String table = Database.getTableName(DataType.BILL);
         String economy = this.currency.getEconomy().toString();
         String currency = this.currency.getName();
-        insert.setString(1, table);
-        insert.setString(2, economy);
-        insert.setString(3, currency);
-        insert.setInt(4, unit);
-        insert.setString(5, origin);
+        PreparedStatement insert = con.prepareStatement("INSERT INTO " + table + " (id, economy, currency, unit, birth, origin)" +
+                " VALUES (UUID_TO_BIN(@uuid, 1), ?, ?, ?, CURRENT_TIMESTAMP, ?);");
+        insert.setString(1, economy);
+        insert.setString(2, currency);
+        insert.setInt(3, unit);
+        insert.setString(4, origin);
         
         if (insert.executeUpdate() > 0) {
-            ResultSet resultSet = insert.getGeneratedKeys();
-            if (resultSet.next()) {
-                id = resultSet.getInt(1);
+            ResultSet select = con.createStatement().executeQuery("SELECT @uuid;");
+            if (select.next()) {
+                id = UUID.fromString(select.getString(1));
+                log.info("New bill UUID: " + id.toString()); // TODO DEBUG
                 return this;
             }
             throw new SQLException("Unable to select the generated ID.");
@@ -43,8 +48,9 @@ public class BillFactory implements Bill {
         throw new SQLException("Unable to insert a row.");
     }
     
-    public Bill getFromId(int id) throws SQLException {
+    public Bill findBill(int id) throws SQLException {
         // TODO implement this method
+        return null;
     }
     
     @Override
@@ -58,8 +64,14 @@ public class BillFactory implements Bill {
     }
     
     @Override
-    public int getId() {
+    public UUID getUniqueId() {
         return id;
+    }
+    
+    @Override
+    public ItemStack getItemStack() {
+        // TODO implement this method
+        return null;
     }
     
 }
