@@ -1,17 +1,16 @@
-package io.github.lazoyoung;
+package io.github.lazoyoung.bill;
 
 import io.github.lazoyoung.economy.Currency;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.UUID;
-
-public class Bill {
+class Bill {
     
     private Currency currency;
-    private UUID id;
     private ItemStack item;
+    private int unit;
+    private int id;
     
-    public Bill(Currency currency) {
+    Bill(Currency currency, int unit, int id) {
     
     }
     

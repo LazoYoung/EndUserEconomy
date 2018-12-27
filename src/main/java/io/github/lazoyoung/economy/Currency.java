@@ -37,7 +37,7 @@ public class Currency {
     }
     
     @Nullable
-    public String getCurrency() {
+    public String getName() {
         return currency;
     }
     

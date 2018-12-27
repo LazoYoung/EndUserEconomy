@@ -5,4 +5,3 @@ database:
     password: ''
     tables:
       bill: 'Bill'
-      bill_registry: 'BillRegistry'

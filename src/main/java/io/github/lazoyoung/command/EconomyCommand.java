@@ -111,7 +111,7 @@ public class EconomyCommand extends CommandData implements CommandExecutor {
                 sender.sendMessage("That account does not exist.");
                 return;
             }
-            double bal = eco.getBalance(player, c.getCurrency());
+            double bal = eco.getBalance(player, c.getName());
             sender.sendMessage(player.getName() + "'s balance: " + bal);
             return;
         }
@@ -142,13 +142,13 @@ public class EconomyCommand extends CommandData implements CommandExecutor {
             
             switch(args[0].toLowerCase()) {
                 case "deposit":
-                    result = eco.deposit(player, c.getCurrency(), amount);
+                    result = eco.deposit(player, c.getName(), amount);
                     break;
                 case "withdraw":
-                    result = eco.withdraw(player, c.getCurrency(), amount);
+                    result = eco.withdraw(player, c.getName(), amount);
                     break;
                 case "set":
-                    result = eco.setBalance(player, c.getCurrency(), amount);
+                    result = eco.setBalance(player, c.getName(), amount);
                     break;
                 default:
                     sender.sendMessage("Invalid parameter.");
