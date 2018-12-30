@@ -1,7 +1,6 @@
 package io.github.lazoyoung.command;
 
 import io.github.lazoyoung.economy.Currency;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.TabExecutor;

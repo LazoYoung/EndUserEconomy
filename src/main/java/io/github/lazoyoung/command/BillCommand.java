@@ -9,7 +9,6 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -69,13 +68,14 @@ public class BillCommand extends CommandBase {
         try {
             Bill bill = new BillFactory(c, unit).printNew(origin);
             TextComponent text = new TextComponent("A new bill has been printed.");
+            text.setUnderlined(true);
             text.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(bill.getUniqueId().toString()).create()));
             sender.spigot().sendMessage(text);
         } catch (SQLException e) {
             e.printStackTrace();
             sender.sendMessage("Failed to print a bill.");
         }
-    
+        
         // TODO implement item
         return true;
     }
