@@ -2,6 +2,7 @@ package io.github.lazoyoung;
 
 import io.github.lazoyoung.command.BillCommand;
 import io.github.lazoyoung.command.EconomyCommand;
+import io.github.lazoyoung.database.Database;
 import io.github.lazoyoung.economy.Economy;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.plugin.Plugin;
