@@ -1,7 +1,7 @@
-package io.github.lazoyoung;
+package io.github.lazoyoung.endusereconomy;
 
-import io.github.lazoyoung.economy.Economy;
-import io.github.lazoyoung.economy.handler.EconomyHandler;
+import io.github.lazoyoung.endusereconomy.economy.Economy;
+import io.github.lazoyoung.endusereconomy.economy.handler.EconomyHandler;
 
 import java.util.HashMap;
 import java.util.Map;

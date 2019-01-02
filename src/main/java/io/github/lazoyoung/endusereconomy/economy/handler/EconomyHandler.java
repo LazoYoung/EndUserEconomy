@@ -1,4 +1,4 @@
-package io.github.lazoyoung.economy.handler;
+package io.github.lazoyoung.endusereconomy.economy.handler;
 
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.OfflinePlayer;

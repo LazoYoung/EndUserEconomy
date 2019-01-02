@@ -1,4 +1,4 @@
-package io.github.lazoyoung;
+package io.github.lazoyoung.endusereconomy;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -6,12 +6,14 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
+import java.io.IOException;
 
 public enum Config {
     
     DATABASE("database.yml", 1),
     BILL("bill.yml", 1);
     
+    private File file;
     private FileConfiguration fileConfig;
     private String fileName;
     private int version;
@@ -20,6 +22,7 @@ public enum Config {
         this.fileConfig = null;
         this.fileName = fileName;
         this.version = version;
+        this.file = new File(Bukkit.getPluginManager().getPlugin(Main.pluginName).getDataFolder(), fileName);
     }
     
     public FileConfiguration get() {
@@ -32,8 +35,6 @@ public enum Config {
     
     public void loadFileConfig() {
         Plugin plugin = Bukkit.getPluginManager().getPlugin(Main.pluginName);
-        File dataFolder = plugin.getDataFolder();
-        File file = new File(dataFolder, fileName);
         FileConfiguration fileConfig1;
         
         if (!file.isFile()) {
@@ -48,6 +49,10 @@ public enum Config {
         }
         
         this.fileConfig = fileConfig1;
+    }
+    
+    public void save(FileConfiguration config) throws IOException {
+        config.save(file);
     }
     
 }

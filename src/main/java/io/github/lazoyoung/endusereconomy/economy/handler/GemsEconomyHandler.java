@@ -1,4 +1,4 @@
-package io.github.lazoyoung.economy.handler;
+package io.github.lazoyoung.endusereconomy.economy.handler;
 
 import me.xanium.gemseconomy.api.GemsEconomyAPI;
 import me.xanium.gemseconomy.economy.AccountManager;

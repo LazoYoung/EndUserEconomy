@@ -1,4 +1,4 @@
-package io.github.lazoyoung.economy.handler;
+package io.github.lazoyoung.endusereconomy.economy.handler;
 
 public abstract class AbstractEconomyHandler implements EconomyHandler {
     

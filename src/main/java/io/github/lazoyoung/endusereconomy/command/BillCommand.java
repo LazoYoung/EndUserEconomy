@@ -1,8 +1,8 @@
-package io.github.lazoyoung.command;
+package io.github.lazoyoung.endusereconomy.command;
 
-import io.github.lazoyoung.bill.Bill;
-import io.github.lazoyoung.bill.BillFactory;
-import io.github.lazoyoung.economy.Currency;
+import io.github.lazoyoung.endusereconomy.bill.Bill;
+import io.github.lazoyoung.endusereconomy.bill.BillFactory;
+import io.github.lazoyoung.endusereconomy.economy.Currency;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -12,13 +12,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import java.sql.SQLException;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class BillCommand extends CommandBase {
     
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(final CommandSender sender, Command command, String label, String[] args) {
         if (args.length < 1) {
             String alias = "/" + label;
             sender.sendMessage(alias + " print <unit> [origin]");
@@ -65,18 +65,17 @@ public class BillCommand extends CommandBase {
             return true;
         }
     
-        try {
-            Bill bill = new BillFactory(c, unit).printNew(origin);
-            TextComponent text = new TextComponent("A new bill has been printed.");
-            text.setUnderlined(true);
-            text.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(bill.getUniqueId().toString()).create()));
-            sender.spigot().sendMessage(text);
-        } catch (SQLException e) {
-            e.printStackTrace();
+        Consumer<Bill> callback = (bill -> {
+            if (bill != null) {
+                TextComponent text = new TextComponent("A new bill has been printed.");
+                text.setUnderlined(true);
+                text.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(bill.getUniqueId().toString()).create()));
+                sender.spigot().sendMessage(text);
+                return;
+            }
             sender.sendMessage("Failed to print a bill.");
-        }
-        
-        // TODO implement item
+        });
+        BillFactory.printNew(c, unit, origin, item, callback);
         return true;
     }
     

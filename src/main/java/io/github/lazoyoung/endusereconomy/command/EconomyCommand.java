@@ -1,8 +1,8 @@
-package io.github.lazoyoung.command;
+package io.github.lazoyoung.endusereconomy.command;
 
-import io.github.lazoyoung.economy.Currency;
-import io.github.lazoyoung.economy.Economy;
-import io.github.lazoyoung.economy.handler.EconomyHandler;
+import io.github.lazoyoung.endusereconomy.economy.Currency;
+import io.github.lazoyoung.endusereconomy.economy.Economy;
+import io.github.lazoyoung.endusereconomy.economy.handler.EconomyHandler;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -79,9 +79,9 @@ public class EconomyCommand extends CommandBase {
                 return;
             }
             if (currency == null) {
-                currencySel.put(id, new Currency(economy, handler));
+                currencySel.put(id, new Currency(economy));
             } else {
-                currencySel.put(id, new Currency(economy, handler, currency));
+                currencySel.put(id, new Currency(economy, currency));
             }
         } catch (IllegalArgumentException e) {
             sender.sendMessage(e.getMessage());

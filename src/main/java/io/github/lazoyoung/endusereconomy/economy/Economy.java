@@ -1,8 +1,8 @@
-package io.github.lazoyoung.economy;
+package io.github.lazoyoung.endusereconomy.economy;
 
-import io.github.lazoyoung.economy.handler.EconomyHandler;
-import io.github.lazoyoung.economy.handler.GemsEconomyHandler;
-import io.github.lazoyoung.economy.handler.VaultEconomyHandler;
+import io.github.lazoyoung.endusereconomy.economy.handler.EconomyHandler;
+import io.github.lazoyoung.endusereconomy.economy.handler.GemsEconomyHandler;
+import io.github.lazoyoung.endusereconomy.economy.handler.VaultEconomyHandler;
 
 import javax.annotation.Nullable;
 

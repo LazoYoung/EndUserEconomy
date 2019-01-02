@@ -1,6 +1,6 @@
-package io.github.lazoyoung.command;
+package io.github.lazoyoung.endusereconomy.command;
 
-import io.github.lazoyoung.economy.Currency;
+import io.github.lazoyoung.endusereconomy.economy.Currency;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.command.TabExecutor;
