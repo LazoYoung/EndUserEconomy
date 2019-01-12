@@ -5,6 +5,7 @@ import io.github.lazoyoung.database_util.Connector;
 import io.github.lazoyoung.database_util.Table;
 import io.github.lazoyoung.endusereconomy.Config;
 import io.github.lazoyoung.endusereconomy.Main;
+import io.github.lazoyoung.endusereconomy.bill.Bill;
 import io.github.lazoyoung.endusereconomy.bill.BillFactory;
 import io.github.lazoyoung.endusereconomy.economy.Currency;
 import io.github.lazoyoung.endusereconomy.economy.Economy;
@@ -77,7 +78,7 @@ public class BillTable extends Table {
         });
         final Callback<Object, SQLException> insertResult = ((key, e) -> {
             if (key != null && e == null) {
-                executeQuery(selectResult1, "SELECT uuid FROM " + tableName + " WHERE id = ?;", (int) key);
+                executeQuery(selectResult1, "SELECT uuid FROM " + tableName + " WHERE id = ?;", key);
                 return;
             }
             callback.accept(null);
@@ -101,7 +102,7 @@ public class BillTable extends Table {
         executeQuery(selectResult, "SELECT UUID();");
     }
     
-    public void queryRecord(final UUID uuid, Consumer<BillFactory> callback) {
+    public void queryRecord(final UUID uuid, Consumer<Bill> callback) {
         final Callback<ResultSet, SQLException> selectQuery = ((result, thrown) -> {
             try {
                 if (result.next()) {
@@ -110,13 +111,13 @@ public class BillTable extends Table {
                     int unit = result.getInt("unit");
                     String date = result.getDate("birth").toString();
                     String origin = result.getString("origin");
-                    ItemStack itemStack = BillFactory.loadItemStack(uuid);
+                    ItemStack itemStack = BillFactory.getItemBase(currency, unit);
                     if (itemStack == null) {
                         callback.accept(null);
                         Main.log(ChatColor.RED, "Failed to load ItemStack of bill: " + uuid);
                         return;
                     }
-                    callback.accept(new BillFactory(uuid, currency, unit, date, origin, itemStack));
+                    callback.accept(new BillFactory(uuid, currency, unit, date, origin));
                 }
             } catch(SQLException e) {
                 e.printStackTrace();

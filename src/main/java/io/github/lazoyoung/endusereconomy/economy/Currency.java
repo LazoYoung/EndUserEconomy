@@ -59,6 +59,15 @@ public class Currency {
     }
     
     @Override
+    public String toString() {
+        String str = economy.getPluginName();
+        if (currency != null) {
+            str += ("." + currency);
+        }
+        return str;
+    }
+    
+    @Override
     public int hashCode() {
         return Objects.hash(economy, currency);
     }

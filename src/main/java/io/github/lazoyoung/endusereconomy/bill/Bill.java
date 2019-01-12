@@ -10,8 +10,8 @@ public interface Bill {
     Currency getCurrency();
     int getUnit();
     UUID getUniqueId();
-    ItemStack getItemStack();
     String getIssueDate();
     String getOrigin();
+    ItemStack getItem();
     
 }
