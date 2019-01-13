@@ -1,5 +1,6 @@
 package io.github.lazoyoung.endusereconomy.command;
 
+import io.github.lazoyoung.endusereconomy.Config;
 import io.github.lazoyoung.endusereconomy.bill.Bill;
 import io.github.lazoyoung.endusereconomy.bill.BillFactory;
 import io.github.lazoyoung.endusereconomy.economy.Currency;
@@ -14,9 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class BillCommand extends CommandBase {
@@ -149,6 +148,53 @@ public class BillCommand extends CommandBase {
      */
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        return null;
+        List<String> comps = new ArrayList<>();
+        String arg = args[0].toLowerCase();
+        
+        if (args.length == 1) {
+            if ("setitem".startsWith(arg))
+                comps.add("setitem");
+            if ("print".startsWith(arg))
+                comps.add("print");
+            return comps;
+        }
+        
+        Currency currency = getCurrency(sender);
+    
+        if (currency == null) {
+            return comps;
+        }
+        if (arg.equals("setitem")) {
+            switch (args.length) {
+                case 2:
+                    comps.addAll(Config.BILL.get().getConfigurationSection(currency.toString()).getKeys(false));
+                    break;
+                case 3:
+                    comps.add("[display name]");
+                    break;
+                default:
+                    return comps;
+            }
+        }
+        else if (arg.equals("print")) {
+            switch (args.length) {
+                case 2:
+                    Set<String> units = Config.BILL.get().getConfigurationSection(currency.toString()).getKeys(false);
+                    if (units != null) {
+                        comps.addAll(units);
+                    }
+                    break;
+                case 3:
+                    comps.add("[origin]");
+                    break;
+                default:
+                    return comps;
+            }
+        }
+        else {
+            return comps;
+        }
+        
+        return comps;
     }
 }

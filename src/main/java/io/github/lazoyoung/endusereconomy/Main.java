@@ -72,10 +72,7 @@ public class Main extends JavaPlugin {
         }
         
         pluginName = getName();
-        economyCmd = getCommand("economy");
-        billCmd = getCommand("bill");
-        economyCmd.setExecutor(new EconomyCommand());
-        billCmd.setExecutor(new BillCommand());
+        initCommands();
         initDatabase();
         Arrays.stream(Economy.values()).forEach(this::loadEconomy);
     }
@@ -96,6 +93,17 @@ public class Main extends JavaPlugin {
             e.printStackTrace();
             terminate(this, "Failed to initialize database.");
         }
+    }
+    
+    private void initCommands() {
+        BillCommand billExec = new BillCommand();
+        EconomyCommand ecoExec = new EconomyCommand();
+        economyCmd = getCommand("economy");
+        billCmd = getCommand("bill");
+        economyCmd.setExecutor(ecoExec);
+        economyCmd.setTabCompleter(ecoExec);
+        billCmd.setExecutor(billExec);
+        billCmd.setTabCompleter(billExec);
     }
     
     private void loadEconomy(Economy type) {

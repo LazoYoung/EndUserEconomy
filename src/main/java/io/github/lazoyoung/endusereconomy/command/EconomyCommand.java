@@ -11,6 +11,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -181,6 +183,69 @@ public class EconomyCommand extends CommandBase {
      */
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        return null;
+        List<String> comps = new ArrayList<>();
+        String arg = args[0].toLowerCase();
+        
+        if (args.length == 1) {
+            if ("select".startsWith(arg))
+                comps.add("select");
+            if ("balance".startsWith(arg))
+                comps.add("balance");
+            if ("deposit".startsWith(arg))
+                comps.add("deposit");
+            if ("withdraw".startsWith(arg))
+                comps.add("withdraw");
+            if ("set".startsWith(arg))
+                comps.add("set");
+            return comps;
+        }
+        
+        if (arg.equals("select")) {
+            switch (args.length) {
+                case 2:
+                    Arrays.stream(Economy.values()).forEach(economy -> {
+                        if (economy.toString().startsWith(args[1].toUpperCase()))
+                            comps.add(economy.toString());
+                    });
+                    break;
+                case 3:
+                    if (args[2].isEmpty())
+                        comps.add("[economy]");
+                    break;
+                default:
+                    return comps;
+            }
+            return comps;
+        }
+        
+        Currency currency = getCurrency(sender);
+        
+        if (currency == null) {
+            return comps;
+        }
+        if (arg.equals("balance") && args.length == 2) {
+            Bukkit.getServer().getOnlinePlayers().forEach(player -> {
+                if (player.getName().toLowerCase().startsWith(args[1].toLowerCase()))
+                    comps.add(player.getName());
+            });
+        }
+        else if (arg.equals("deposit") || arg.equals("withdraw") || arg.equals("set")) {
+            switch (args.length) {
+                case 2:
+                    String playerArg = args[1].toLowerCase();
+                    Bukkit.getServer().getOnlinePlayers().forEach(player -> {
+                        if (player.getName().toLowerCase().startsWith(playerArg))
+                            comps.add(player.getName());
+                    });
+                    break;
+                case 3:
+                    if (args[2].isEmpty())
+                        comps.add("<amount>");
+                    break;
+                default:
+                    return comps;
+            }
+        }
+        return comps;
     }
 }
