@@ -47,7 +47,7 @@ dependencies {
     }
     compileOnly 'net.ess3:EssentialsX:2.16.0'
     compile 'com.zaxxer:HikariCP:3.1.0'
-    compile 'io.github.lazoyoung:AsyncDatabaseUtil:1.0.14-SNAPSHOT'
+    compile 'io.github.lazoyoung:AsyncDatabaseUtil:1.0.17-SNAPSHOT'
     compileOnly 'com.google.code.findbugs:jsr305:3.0.2' // javax annotation
     compileOnly fileTree (dir: 'lib', include:['*.jar'])
 }

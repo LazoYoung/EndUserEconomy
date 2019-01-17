@@ -87,7 +87,7 @@ public class Main extends JavaPlugin {
             HikariConfig config = Database.getHikariConfig();
             Connector connector = new Connector(Bukkit.getLogger(), config);
             BillTable billTable = BillTable.initTable(connector);
-            Database.registerTable(Database.BILL, billTable);
+            Database.registerTable(Database.BILL_REC, billTable);
             log("Successfully connected to database.");
         } catch (Exception e) {
             e.printStackTrace();

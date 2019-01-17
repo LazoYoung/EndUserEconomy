@@ -26,7 +26,8 @@ public class BillCommand extends CommandBase {
             String alias = "/" + label;
             sender.sendMessage(new String[] {
                     alias + " setitem <unit> [display-name]\n",
-                    alias + " print <unit> [origin]"
+                    alias + " print <unit> [origin]\n",
+                    alias + " discard"
             });
             return true;
         }
@@ -36,6 +37,8 @@ public class BillCommand extends CommandBase {
                 return setItem(sender, args);
             case "print":
                 return print(sender, args);
+            case "discard":
+                return discard(sender);
             default:
                 return false;
         }
@@ -60,8 +63,8 @@ public class BillCommand extends CommandBase {
             unit = Integer.parseInt(args[1]);
             itemStack = player.getInventory().getItemInMainHand().clone();
             if (itemStack == null || itemStack.getType().equals(Material.AIR)) {
-                sender.sendMessage("Please hold the item.");
-                return false;
+                sender.sendMessage("Please hold the item while executing this.");
+                return true;
             }
             if (currency == null) {
                 return true;
@@ -123,13 +126,40 @@ public class BillCommand extends CommandBase {
                 }
                 TextComponent text = new TextComponent("A new bill has been printed.");
                 text.setUnderlined(true);
-                text.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(bill.getUniqueId().toString()).create()));
+                text.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(String.valueOf(bill.getId())).create()));
                 sender.spigot().sendMessage(text);
                 return;
             }
             sender.sendMessage("Failed to print a bill.");
         });
         BillFactory.printNew(c, unit, origin, callback);
+        return true;
+    }
+    
+    // TODO log the action for a week
+    private boolean discard(final CommandSender sender) {
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("Only players can use this command.");
+            return true;
+        }
+        
+        final Player player = (Player) sender;
+        final ItemStack target = player.getInventory().getItemInMainHand();
+        Consumer<Bill> callback = (bill -> {
+            if (bill == null) {
+                sender.sendMessage("That is not a valid item.");
+                return;
+            }
+            bill.discard((succeed) -> {
+                if (succeed) {
+                    player.getInventory().remove(target);
+                    sender.sendMessage("Bill has been discarded.");
+                    return;
+                }
+                sender.sendMessage("Failed to discard.");
+            });
+        });
+        BillFactory.getBillFromItem(target, callback);
         return true;
     }
     

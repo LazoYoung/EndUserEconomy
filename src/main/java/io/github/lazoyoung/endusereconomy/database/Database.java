@@ -10,8 +10,8 @@ import java.util.EnumMap;
 import java.util.Map;
 
 public enum Database {
-
-    BILL;
+    
+    BILL_REC;
     
     private static Map<Database, Table> tableMap = new EnumMap<>(Database.class);
     

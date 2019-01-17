@@ -11,22 +11,27 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.function.Consumer;
 
 public class BillFactory implements Bill {
 
     private Currency currency;
     private int unit;
-    private UUID uniqueId; // TODO convert to integer id
+    private int id;
     private String date;
     private String origin;
     
-    public BillFactory(UUID uniqueId, Currency currency, int unit, String date, String origin) {
-        this.uniqueId = uniqueId;
+    public BillFactory(int id, Currency currency, int unit, String date, String origin) {
+        this.id = id;
         this.currency = currency;
         this.unit = unit;
         this.date = date;
+        this.origin = origin;
+    }
+    
+    private BillFactory(Currency currency, int unit, String origin) {
+        this.currency = currency;
+        this.unit = unit;
         this.origin = origin;
     }
     
@@ -35,23 +40,23 @@ public class BillFactory implements Bill {
      *                 Beware it may supply null argument due to a failure on database transaction.
      */
     public static void printNew(Currency currency, int unit, String origin, Consumer<Bill> callback) {
-        BillFactory factory = new BillFactory(null, currency, unit, null, origin);
-        BillTable table = (BillTable) Database.getTable(Database.BILL);
-        Consumer<UUID> addResult = (uuid -> {
-            if (uuid == null) {
+        BillFactory factory = new BillFactory(currency, unit, origin);
+        BillTable table = (BillTable) Database.getTable(Database.BILL_REC);
+        Consumer<Integer> addResult = (id -> {
+            if (id == null) {
                 callback.accept(null);
                 return;
             }
-            factory.uniqueId = uuid;
+            factory.id = id;
             callback.accept(factory);
         });
         
         table.addRecord(addResult, factory);
     }
     
-    public static void getBill(UUID uniqueId, Consumer<Bill> callback) {
-        BillTable table = (BillTable) Database.getTable(Database.BILL);
-        table.queryRecord(uniqueId, callback);
+    public static void getBill(int id, Consumer<Bill> callback) {
+        BillTable table = (BillTable) Database.getTable(Database.BILL_REC);
+        table.queryRecord(id, callback);
     }
     
     public static void defineItemBase(Currency currency, int unit, ItemStack itemStack, String[] alias) throws IOException {
@@ -76,6 +81,28 @@ public class BillFactory implements Bill {
         return Config.BILL.get().getItemStack(currency.toString() + "." + unit);
     }
     
+    public static void getBillFromItem(ItemStack item, Consumer<Bill> callback) {
+        for (String lore : item.getItemMeta().getLore()) {
+            if (lore.startsWith("ID ")) {
+                int id;
+                try {
+                    id = Integer.parseInt(lore.substring(3));
+                } catch (Exception e) {
+                    break;
+                }
+                getBill(id, callback);
+                return;
+            }
+        }
+        callback.accept(null);
+    }
+    
+    @Override
+    public void discard(Consumer<Boolean> callback) {
+        BillTable table = (BillTable) Database.getTable(Database.BILL_REC);
+        table.deleteRecord(id, callback);
+    }
+    
     @Override
     public ItemStack getItem() {
         ItemStack itemStack = getItemBase(currency, unit).clone();
@@ -85,7 +112,7 @@ public class BillFactory implements Bill {
             if (meta.hasLore()) {
                 lore = meta.getLore();
             }
-            lore.add(uniqueId.toString());
+            lore.add("ID " + id);
             meta.setLore(lore);
             itemStack.setItemMeta(meta);
             itemStack.setAmount(1);
@@ -104,8 +131,8 @@ public class BillFactory implements Bill {
     }
     
     @Override
-    public UUID getUniqueId() {
-        return uniqueId;
+    public int getId() {
+        return id;
     }
     
     @Override
