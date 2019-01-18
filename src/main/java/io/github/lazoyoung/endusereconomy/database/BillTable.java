@@ -12,6 +12,7 @@ import io.github.lazoyoung.endusereconomy.economy.Economy;
 import org.bukkit.ChatColor;
 import org.bukkit.inventory.ItemStack;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.function.Consumer;
@@ -42,8 +43,10 @@ public class BillTable extends Table {
                 "economy VARCHAR(30) NOT NULL COMMENT 'Identical to enums in Economy.java.', " +
                 "currency VARCHAR(15) COMMENT 'This is null for those single-currency economies.', " +
                 "unit INT NOT NULL, " +
-                "birth TIMESTAMP, " +
-                "origin VARCHAR(30) COMMENT 'Can be a player or the server.'" +
+                "date TIMESTAMP NOT NULL COMMENT 'Birth or expiration date.', " +
+                "expired BOOLEAN NOT NULL DEFAULT FALSE, " +
+                "origin VARCHAR(30) COMMENT 'Can be a player or the server.', " +
+                "terminator VARCHAR(30) COMMENT 'Can be a player or the server.'" +
                 ");");
         execute(null, "SET NAMES 'utf8';");
     }
@@ -60,7 +63,7 @@ public class BillTable extends Table {
             }
             callback.accept(null);
         });
-        executeInsert(insertResult, "INSERT INTO " + tableName + " (id, economy, currency, unit, birth, origin)" +
+        executeInsert(insertResult, "INSERT INTO " + tableName + " (id, economy, currency, unit, date, origin)" +
                 " VALUES (null, ?, ?, ?, CURRENT_TIMESTAMP, ?);", economy, currency, unit, origin);
     }
     
@@ -71,15 +74,17 @@ public class BillTable extends Table {
                     Economy economy = Economy.valueOf(result.getString("economy"));
                     Currency currency = new Currency(economy, result.getString("currency"));
                     int unit = result.getInt("unit");
-                    String date = result.getDate("birth").toString();
+                    String date = result.getDate("date").toString();
+                    boolean expired = result.getBoolean("expired");
                     String origin = result.getString("origin");
+                    String terminator = result.getString("terminator");
                     ItemStack itemStack = BillFactory.getItemBase(currency, unit);
                     if (itemStack == null) {
                         callback.accept(null);
                         Main.log(ChatColor.RED, "Failed to load ItemStack of bill: " + id);
                         return;
                     }
-                    callback.accept(new BillFactory(id, currency, unit, date, origin));
+                    callback.accept(new BillFactory(id, currency, unit, date, expired, origin, terminator));
                 }
                 else {
                     callback.accept(null);
@@ -88,18 +93,38 @@ public class BillTable extends Table {
                 e.printStackTrace();
             }
         });
-        executeQuery(selectQuery, "SELECT economy, currency, unit, birth, origin FROM " + tableName + " WHERE id = ?;", id);
+        executeQuery(selectQuery, "SELECT economy, currency, unit, date, expired, origin, terminator FROM " + tableName + " WHERE id = ?;", id);
     }
     
-    public void deleteRecord(int id, final Consumer<Boolean> callback) {
-        Callback<Integer, SQLException> onDelete = ((count, thrown) -> {
+    public void terminateRecord(int id, @Nullable String director, final Consumer<Boolean> callback) {
+        Callback<Integer, SQLException> onUpdate = ((count, thrown) -> {
             if (thrown != null || count == 0) {
                 callback.accept(false);
                 return;
             }
             callback.accept(true);
         });
-        executeUpdate(onDelete, "DELETE FROM " + tableName + " WHERE id=?;", id);
+        
+        if (director != null) {
+            executeUpdate(onUpdate, "UPDATE " + tableName + " SET terminator = ?, date = CURRENT_TIMESTAMP(), expired = TRUE WHERE id = ?;", director, id);
+        } else {
+            executeUpdate(onUpdate, "UPDATE " + tableName + " SET date = CURRENT_TIMESTAMP(), expired = TRUE WHERE id = ?;", id);
+        }
+    }
+    
+    public void clearRecords(int interval, Callback<Integer, SQLException> callback) {
+        executeUpdate(callback, "DELETE FROM " + tableName + " WHERE expired IS TRUE AND (date + INTERVAL ? DAY) < CURRENT_TIMESTAMP();", interval);
+    }
+    
+    public void clearRecord(int id, Consumer<Boolean> callback) {
+        Callback<Integer, SQLException> onDelete = ((count, thrown) -> {
+            if (count > 0) {
+                callback.accept(true);
+            } else {
+                callback.accept(false);
+            }
+        });
+        executeUpdate(onDelete, "DELETE FROM " + tableName + " WHERE id = ?;", id);
     }
 
 }

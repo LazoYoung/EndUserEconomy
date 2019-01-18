@@ -8,6 +8,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,17 +19,23 @@ public class BillFactory implements Bill {
     private Currency currency;
     private int unit;
     private int id;
+    private boolean expired;
     private String date;
     private String origin;
+    private String terminator;
     
-    public BillFactory(int id, Currency currency, int unit, String date, String origin) {
+    // Used to store into memory after querying
+    public BillFactory(int id, Currency currency, int unit, String date, boolean expired, String origin, String terminator) {
         this.id = id;
         this.currency = currency;
         this.unit = unit;
         this.date = date;
+        this.expired = expired;
         this.origin = origin;
+        this.terminator = terminator;
     }
     
+    // Used to print new one
     private BillFactory(Currency currency, int unit, String origin) {
         this.currency = currency;
         this.unit = unit;
@@ -81,7 +88,7 @@ public class BillFactory implements Bill {
         return Config.BILL.get().getItemStack(currency.toString() + "." + unit);
     }
     
-    public static void getBillFromItem(ItemStack item, Consumer<Bill> callback) {
+    public static void getBillFromItem(@Nonnull ItemStack item, Consumer<Bill> callback) {
         for (String lore : item.getItemMeta().getLore()) {
             if (lore.startsWith("ID ")) {
                 int id;
@@ -98,9 +105,9 @@ public class BillFactory implements Bill {
     }
     
     @Override
-    public void discard(Consumer<Boolean> callback) {
+    public void discard(String director, Consumer<Boolean> callback) {
         BillTable table = (BillTable) Database.getTable(Database.BILL_REC);
-        table.deleteRecord(id, callback);
+        table.terminateRecord(id, director, callback);
     }
     
     @Override
@@ -121,6 +128,16 @@ public class BillFactory implements Bill {
     }
     
     @Override
+    public boolean isExpired() {
+        return expired;
+    }
+    
+    @Override
+    public String getTerminator() {
+        return terminator;
+    }
+    
+    @Override
     public Currency getCurrency() {
         return currency;
     }
@@ -136,7 +153,7 @@ public class BillFactory implements Bill {
     }
     
     @Override
-    public String getIssueDate() {
+    public String getDate() {
         return date;
     }
     
