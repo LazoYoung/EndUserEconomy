@@ -1,13 +1,16 @@
 package io.github.lazoyoung.endusereconomy.economy.handler;
 
+import net.ess3.api.events.UserBalanceUpdateEvent;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 import javax.annotation.Nullable;
 
-public class VaultEconomyHandler extends AbstractEconomyHandler {
+public class VaultEconomyHandler extends AbstractEconomyHandler implements Listener {
     
     private net.milkbowl.vault.economy.Economy api;
     
@@ -17,6 +20,11 @@ public class VaultEconomyHandler extends AbstractEconomyHandler {
             throw new InstantiationException("Failed to load Vault API. Make sure you've installed the economy plugin linked to Vault.");
         }
         api = provider.getProvider();
+    }
+    
+    @EventHandler
+    public void onBalanceUpdate(UserBalanceUpdateEvent event) {
+        // TODO log transaction
     }
     
     @Override
@@ -59,4 +67,5 @@ public class VaultEconomyHandler extends AbstractEconomyHandler {
     public boolean isValidCurrency(String currency) {
         return false;
     }
+    
 }

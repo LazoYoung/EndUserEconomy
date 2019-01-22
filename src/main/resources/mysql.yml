@@ -1,0 +1,6 @@
+# Do not change this.
+version: 1
+
+jdbc-url: 'jdbc:mysql://localhost:3306/database'
+username: 'root'
+password: 'asdf'

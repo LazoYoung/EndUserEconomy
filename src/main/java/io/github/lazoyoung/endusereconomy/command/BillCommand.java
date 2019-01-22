@@ -26,7 +26,7 @@ public class BillCommand extends CommandBase {
     @Override
     public boolean onCommand(final CommandSender sender, Command command, String label, String[] args) {
         String alias = "/" + label;
-        String[] formats = new String[]{
+        String[] formats = new String[] {
                 alias + " setitem <unit> [display-name]",
                 alias + " print <unit> [origin]",
                 alias + " discard",
@@ -236,7 +236,7 @@ public class BillCommand extends CommandBase {
         if (scope.equals("this") && item != null) {
             BillFactory.getBillFromItem(item, (bill -> {
                 if (bill.isExpired()) {
-                    BillTable table = (BillTable) Database.getTable(Database.BILL_REC);
+                    BillTable table = (BillTable) Database.getTable(Database.BILL_RECORD);
                     table.clearRecord(bill.getId(), (succeed) -> {
                         if (succeed) {
                             sender.sendMessage("Bill record has been deleted.");
@@ -250,7 +250,7 @@ public class BillCommand extends CommandBase {
             }));
         }
         else if (scope.equals("all")) {
-            BillTable table = (BillTable) Database.getTable(Database.BILL_REC);
+            BillTable table = (BillTable) Database.getTable(Database.BILL_RECORD);
             table.clearRecords(7, (count, thrown) -> {
                 if (thrown == null) {
                     sender.sendMessage("Cleared " + count + " records expired for more than 7 days.");

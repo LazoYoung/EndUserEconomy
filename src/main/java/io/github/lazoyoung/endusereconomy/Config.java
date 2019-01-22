@@ -10,8 +10,9 @@ import java.io.IOException;
 
 public enum Config {
     
-    DATABASE("database.yml", 1),
-    BILL("bill.yml", 1);
+    MY_SQL("mysql.yml", 1),
+    BILL("bill.yml", 2),
+    BANK("bank.yml", 1);
     
     private File file;
     private FileConfiguration fileConfig;

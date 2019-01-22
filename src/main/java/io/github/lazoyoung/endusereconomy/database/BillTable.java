@@ -18,35 +18,29 @@ import java.sql.SQLException;
 import java.util.function.Consumer;
 
 public class BillTable extends Table {
-
-    private String tableName;
-
-    private BillTable(Connector connector) {
-        super(connector);
-    }
     
-    public static BillTable initTable(Connector connector) {
-        return new BillTable(connector);
+    public BillTable(Connector connector) {
+        super(connector, Config.BILL.get().getString("records.table-name"));
     }
     
     @Override
     protected void init() {
-        this.tableName = Config.DATABASE.get().getString("mysql.tables.bill");
-        Callback<Integer, SQLException> createResult = ((result, e) -> {
+        Callback<Integer, SQLException> createResult = (result, e) -> {
             if (e != null) {
-                Main.terminate(Main.getInstance(), "Failed to init table " + tableName + ". SQLException code: " + e.getSQLState());
+                Main.terminate(Main.getInstance(), "Failed to create table " + tableName + ". SQLException code: " + e.getSQLState());
             }
-        });
+        };
         executeUpdate(createResult, "CREATE TABLE IF NOT EXISTS " + tableName +
                 " (" +
-                "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                "id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, " +
                 "economy VARCHAR(30) NOT NULL COMMENT 'Identical to enums in Economy.java.', " +
                 "currency VARCHAR(15) COMMENT 'This is null for those single-currency economies.', " +
                 "unit INT NOT NULL, " +
                 "date TIMESTAMP NOT NULL COMMENT 'Birth or expiration date.', " +
                 "expired BOOLEAN NOT NULL DEFAULT FALSE, " +
                 "origin VARCHAR(30) COMMENT 'Can be a player or the server.', " +
-                "terminator VARCHAR(30) COMMENT 'Can be a player or the server.'" +
+                "terminator VARCHAR(30) COMMENT 'Can be a player or the server.', " +
+                "PRIMARY KEY (id)" +
                 ");");
         execute(null, "SET NAMES 'utf8';");
     }
@@ -56,19 +50,19 @@ public class BillTable extends Table {
         final String currency = factory.getCurrency().getName();
         final int unit = factory.getUnit();
         final String origin = factory.getOrigin();
-        final Callback<Integer, SQLException> insertResult = ((key, e) -> {
+        final Callback<Integer, SQLException> insertResult = (key, e) -> {
             if (key != null && e == null) {
                 callback.accept(key);
                 return;
             }
             callback.accept(null);
-        });
+        };
         executeInsert(insertResult, "INSERT INTO " + tableName + " (id, economy, currency, unit, date, origin)" +
-                " VALUES (null, ?, ?, ?, CURRENT_TIMESTAMP, ?);", economy, currency, unit, origin);
+                " VALUES (NULL, ?, ?, ?, CURRENT_TIMESTAMP, ?);", economy, currency, unit, origin);
     }
     
     public void queryRecord(final int id, Consumer<Bill> callback) {
-        final Callback<ResultSet, SQLException> selectQuery = ((result, thrown) -> {
+        final Callback<ResultSet, SQLException> selectQuery = (result, thrown) -> {
             try {
                 if (result.next()) {
                     Economy economy = Economy.valueOf(result.getString("economy"));
@@ -92,18 +86,18 @@ public class BillTable extends Table {
             } catch(SQLException e) {
                 e.printStackTrace();
             }
-        });
+        };
         executeQuery(selectQuery, "SELECT economy, currency, unit, date, expired, origin, terminator FROM " + tableName + " WHERE id = ?;", id);
     }
     
     public void terminateRecord(int id, @Nullable String director, final Consumer<Boolean> callback) {
-        Callback<Integer, SQLException> onUpdate = ((count, thrown) -> {
+        Callback<Integer, SQLException> onUpdate = (count, thrown) -> {
             if (thrown != null || count == 0) {
                 callback.accept(false);
                 return;
             }
             callback.accept(true);
-        });
+        };
         
         if (director != null) {
             executeUpdate(onUpdate, "UPDATE " + tableName + " SET terminator = ?, date = CURRENT_TIMESTAMP(), expired = TRUE WHERE id = ?;", director, id);
@@ -117,14 +111,14 @@ public class BillTable extends Table {
     }
     
     public void clearRecord(int id, Consumer<Boolean> callback) {
-        Callback<Integer, SQLException> onDelete = ((count, thrown) -> {
+        Callback<Integer, SQLException> onDelete = (count, thrown) -> {
             if (count > 0) {
                 callback.accept(true);
             } else {
                 callback.accept(false);
             }
-        });
+        };
         executeUpdate(onDelete, "DELETE FROM " + tableName + " WHERE id = ?;", id);
     }
-
+    
 }

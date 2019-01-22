@@ -48,7 +48,7 @@ public class BillFactory implements Bill {
      */
     public static void printNew(Currency currency, int unit, String origin, Consumer<Bill> callback) {
         BillFactory factory = new BillFactory(currency, unit, origin);
-        BillTable table = (BillTable) Database.getTable(Database.BILL_REC);
+        BillTable table = (BillTable) Database.getTable(Database.BILL_RECORD);
         Consumer<Integer> addResult = (id -> {
             if (id == null) {
                 callback.accept(null);
@@ -62,7 +62,7 @@ public class BillFactory implements Bill {
     }
     
     public static void getBill(int id, Consumer<Bill> callback) {
-        BillTable table = (BillTable) Database.getTable(Database.BILL_REC);
+        BillTable table = (BillTable) Database.getTable(Database.BILL_RECORD);
         table.queryRecord(id, callback);
     }
     
@@ -106,7 +106,7 @@ public class BillFactory implements Bill {
     
     @Override
     public void discard(String director, Consumer<Boolean> callback) {
-        BillTable table = (BillTable) Database.getTable(Database.BILL_REC);
+        BillTable table = (BillTable) Database.getTable(Database.BILL_RECORD);
         table.terminateRecord(id, director, callback);
     }
     

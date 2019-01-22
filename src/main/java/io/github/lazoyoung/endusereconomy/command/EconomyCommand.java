@@ -5,6 +5,7 @@ import io.github.lazoyoung.endusereconomy.economy.Economy;
 import io.github.lazoyoung.endusereconomy.economy.handler.EconomyHandler;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -23,8 +24,8 @@ public class EconomyCommand extends CommandBase {
         if (args.length == 0) {
             sender.sendMessage(new String[] {
                     "/economy select <economy> [currency]\n",
-                    "/economy balance [player]\n",
-                    "/economy <deposit/withdraw/set> <player> <amount>"
+                    ChatColor.STRIKETHROUGH + "/economy balance [player]\n",
+                    ChatColor.STRIKETHROUGH + "/economy <deposit/withdraw/set> <player> <amount>"
             });
             return true;
         }
@@ -74,7 +75,7 @@ public class EconomyCommand extends CommandBase {
         
         try {
             Economy economy = Economy.valueOf(economyArg);
-            EconomyHandler handler = economy.getHandler();
+            EconomyHandler handler = EconomyHandler.getInstance(economy);
             
             if(handler == null) {
                 sender.sendMessage("That economy is not available.");
@@ -93,7 +94,7 @@ public class EconomyCommand extends CommandBase {
         sender.sendMessage("Selected: " + economyArg + "/" + currency);
     }
     
-    @SuppressWarnings("deprecation")
+    @Deprecated
     private void balance(CommandSender sender, String[] args) {
         OfflinePlayer player = null;
         Currency c = getCurrency(sender);
@@ -121,7 +122,7 @@ public class EconomyCommand extends CommandBase {
         sender.sendMessage("Please select currency: /eco select <economy> [currency]");
     }
     
-    @SuppressWarnings("deprecation")
+    @Deprecated
     private boolean setBalance(CommandSender sender, String[] args) {
         if (args.length < 3) {
             sender.sendMessage("Missing parameter.");

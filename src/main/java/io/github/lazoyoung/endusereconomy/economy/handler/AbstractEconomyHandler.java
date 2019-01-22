@@ -1,7 +1,9 @@
 package io.github.lazoyoung.endusereconomy.economy.handler;
 
-public abstract class AbstractEconomyHandler implements EconomyHandler {
+import me.xanium.gemseconomy.event.GemsPayEvent;
+
+abstract class AbstractEconomyHandler implements EconomyHandler {
     
-    public AbstractEconomyHandler() {}
+    AbstractEconomyHandler() {}
     
 }

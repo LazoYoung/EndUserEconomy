@@ -1,8 +1,11 @@
 package io.github.lazoyoung.endusereconomy.economy;
 
+import io.github.lazoyoung.endusereconomy.Main;
 import io.github.lazoyoung.endusereconomy.economy.handler.EconomyHandler;
 import io.github.lazoyoung.endusereconomy.economy.handler.GemsEconomyHandler;
 import io.github.lazoyoung.endusereconomy.economy.handler.VaultEconomyHandler;
+import org.bukkit.Bukkit;
+import org.bukkit.event.Listener;
 
 import javax.annotation.Nullable;
 
@@ -25,15 +28,8 @@ public enum Economy {
         return pluginName;
     }
     
-    @Nullable
-    public EconomyHandler getHandler() {
-        EconomyHandler val = null;
-        try {
-            val = (EconomyHandler) handlerClass.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        return val;
+    public Class getHandlerClass() {
+        return handlerClass;
     }
     
     public boolean hasMultiCurrency() {

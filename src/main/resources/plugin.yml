@@ -15,3 +15,6 @@ commands:
   bill:
     usage: Type /bill to see help.
     aliases: [coin, papermoney]
+  account:
+    usage: Type /account to see help.
+    aliases: [bank]

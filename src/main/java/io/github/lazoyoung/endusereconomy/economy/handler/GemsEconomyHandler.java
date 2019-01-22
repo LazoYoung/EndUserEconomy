@@ -2,15 +2,34 @@ package io.github.lazoyoung.endusereconomy.economy.handler;
 
 import me.xanium.gemseconomy.api.GemsEconomyAPI;
 import me.xanium.gemseconomy.economy.AccountManager;
+import me.xanium.gemseconomy.event.GemsPayEvent;
+import me.xanium.gemseconomy.event.GemsTransactionEvent;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerJoinEvent;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
 
-public class GemsEconomyHandler extends AbstractEconomyHandler {
+public class GemsEconomyHandler extends AbstractEconomyHandler implements Listener {
     
     private GemsEconomyAPI api = new GemsEconomyAPI();
+    
+    @EventHandler
+    public void onPay(GemsPayEvent event) {
+        if (!event.isCancelled()) {
+            // TODO log transaction
+        }
+    }
+    
+    @EventHandler
+    public void onTransfer(GemsTransactionEvent event) {
+        if (!event.isCancelled()) {
+        
+        }
+    }
     
     @Override
     public double getBalance(OfflinePlayer player, @Nullable String currency) {

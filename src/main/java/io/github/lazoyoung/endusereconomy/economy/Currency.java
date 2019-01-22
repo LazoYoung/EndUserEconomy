@@ -16,15 +16,17 @@ public class Currency {
         if (economy.hasMultiCurrency()) {
             throw new IllegalArgumentException("This economy has multiple currency. Please define currency name.");
         }
-        if (economy.getHandler() == null) {
+        this.economy = economy;
+        this.handler = EconomyHandler.getInstance(economy);
+        if (handler == null) {
             throw new IllegalStateException("Economy " + economy.getPluginName() + " is not handled by this plugin yet.");
         }
-        this.economy = economy;
-        this.handler = economy.getHandler();
     }
     
     public Currency(Economy economy, String currency) throws IllegalArgumentException {
-        if (economy.getHandler() == null) {
+        this.economy = economy;
+        this.handler = EconomyHandler.getInstance(economy);
+        if (handler == null) {
             throw new IllegalStateException("Economy " + economy.getPluginName() + " is not handled by this plugin yet.");
         }
         if (currency != null) {
@@ -32,12 +34,12 @@ public class Currency {
             if (!economy.hasMultiCurrency()) {
                 throw new IllegalArgumentException("Economy " + economy.getPluginName() + " does not support multiple currency.");
             }
-            if (!economy.getHandler().isValidCurrency(currency)) {
+            if (!handler.isValidCurrency(currency)) {
                 throw new IllegalArgumentException("Unknown currency: " + currency);
             }
         }
-        this.economy = economy;
-        this.handler = economy.getHandler();
+        
+        
     }
     
     public Economy getEconomy() {

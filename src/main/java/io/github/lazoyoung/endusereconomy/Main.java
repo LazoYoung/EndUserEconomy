@@ -2,15 +2,20 @@ package io.github.lazoyoung.endusereconomy;
 
 import com.zaxxer.hikari.HikariConfig;
 import io.github.lazoyoung.database_util.Connector;
+import io.github.lazoyoung.endusereconomy.command.AccountCommand;
 import io.github.lazoyoung.endusereconomy.command.BillCommand;
 import io.github.lazoyoung.endusereconomy.command.EconomyCommand;
+import io.github.lazoyoung.endusereconomy.database.BankTable;
 import io.github.lazoyoung.endusereconomy.database.BillTable;
 import io.github.lazoyoung.endusereconomy.database.Database;
 import io.github.lazoyoung.endusereconomy.economy.Economy;
+import io.github.lazoyoung.endusereconomy.economy.handler.EconomyHandler;
+import me.kangarko.ui.UIDesignerAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -23,6 +28,7 @@ public class Main extends JavaPlugin {
     static String pluginName;
     private static PluginCommand economyCmd;
     private static PluginCommand billCmd;
+    private static PluginCommand accountCmd;
     
     public static void terminate(@Nonnull Plugin suspender, @Nullable String cause) {
         if (cause == null) {
@@ -74,6 +80,7 @@ public class Main extends JavaPlugin {
         pluginName = getName();
         initCommands();
         initDatabase();
+        UIDesignerAPI.setPlugin(this);
         Arrays.stream(Economy.values()).forEach(this::loadEconomy);
     }
     
@@ -86,24 +93,30 @@ public class Main extends JavaPlugin {
         try {
             HikariConfig config = Database.getHikariConfig();
             Connector connector = new Connector(Bukkit.getLogger(), config);
-            BillTable billTable = BillTable.initTable(connector);
-            Database.registerTable(Database.BILL_REC, billTable);
-            log("Successfully connected to database.");
+            BillTable billTable = new BillTable(connector);
+            BankTable bankTable = new BankTable(connector);
+            Database.registerTable(Database.BILL_RECORD, billTable);
+            Database.registerTable(Database.BANK_TRANSACTION, bankTable);
         } catch (Exception e) {
             e.printStackTrace();
             terminate(this, "Failed to initialize database.");
         }
+        log("Successfully connected to database.");
     }
     
     private void initCommands() {
         BillCommand billExec = new BillCommand();
         EconomyCommand ecoExec = new EconomyCommand();
+        AccountCommand accountExec = new AccountCommand();
         economyCmd = getCommand("economy");
         billCmd = getCommand("bill");
+        accountCmd = getCommand("account");
         economyCmd.setExecutor(ecoExec);
         economyCmd.setTabCompleter(ecoExec);
         billCmd.setExecutor(billExec);
         billCmd.setTabCompleter(billExec);
+        accountCmd.setExecutor(accountExec);
+        accountCmd.setTabCompleter(accountExec);
     }
     
     private void loadEconomy(Economy type) {
@@ -111,7 +124,13 @@ public class Main extends JavaPlugin {
         Plugin plugin = getServer().getPluginManager().getPlugin(pluginName);
         
         if (plugin != null && plugin.isEnabled()) {
-            EconomyAPI.register(type, type.getHandler());
+            try {
+                EconomyHandler handler = (EconomyHandler) type.getHandlerClass().newInstance();
+                EconomyHandler.register(type, handler);
+                getServer().getPluginManager().registerEvents((Listener) handler, this);
+            } catch (InstantiationException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
         }
     }
     

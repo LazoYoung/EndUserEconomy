@@ -11,7 +11,8 @@ import java.util.Map;
 
 public enum Database {
     
-    BILL_REC;
+    BILL_RECORD,
+    BANK_TRANSACTION;
     
     private static Map<Database, Table> tableMap = new EnumMap<>(Database.class);
     
@@ -30,11 +31,11 @@ public enum Database {
     }
     
     public static HikariConfig getHikariConfig() {
-        FileConfiguration fileConfig = Config.DATABASE.get();
+        FileConfiguration fileConfig = Config.MY_SQL.get();
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(fileConfig.getString("mysql.jdbc-url"));
-        config.setUsername(fileConfig.getString("mysql.username"));
-        config.setPassword(fileConfig.getString("mysql.password"));
+        config.setJdbcUrl(fileConfig.getString("jdbc-url"));
+        config.setUsername(fileConfig.getString("username"));
+        config.setPassword(fileConfig.getString("password"));
         return config;
     }
 

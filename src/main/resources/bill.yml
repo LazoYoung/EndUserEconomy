@@ -1,1 +1,5 @@
-version: 1
+# Do not change this.
+version: 2
+
+records:
+  table-name: 'bill'
