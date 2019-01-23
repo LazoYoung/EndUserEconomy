@@ -1,6 +1,9 @@
 # EndUserEconomy
-Use bank to convert your virtual money into real item in Minecraft.
 This plugin will offer you the essential features for your economy-theme server.
+
+# Introduce bill to your players
+Let your players use item-based money to trade items.  
+Also, save bill or send money via bank!
 
 ## Link multiple economy plugins
 This plugin has built-in economy system. But you can also link external economy plugins with/without Vault.
