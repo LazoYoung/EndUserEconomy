@@ -3,7 +3,6 @@ package io.github.lazoyoung.endusereconomy.economy.handler;
 import io.github.lazoyoung.endusereconomy.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.event.Event;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;

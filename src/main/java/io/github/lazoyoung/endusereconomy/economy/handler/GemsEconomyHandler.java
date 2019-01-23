@@ -8,7 +8,6 @@ import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -27,7 +26,7 @@ public class GemsEconomyHandler extends AbstractEconomyHandler implements Listen
     @EventHandler
     public void onTransfer(GemsTransactionEvent event) {
         if (!event.isCancelled()) {
-        
+            // TODO log transaction
         }
     }
     

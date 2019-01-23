@@ -2,6 +2,7 @@ package io.github.lazoyoung.endusereconomy.command;
 
 import io.github.lazoyoung.endusereconomy.bank.AccountRecords;
 import io.github.lazoyoung.endusereconomy.economy.Currency;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -24,7 +25,25 @@ public class AccountCommand extends CommandBase {
                 break;
             }
             case 1: {
-                Arrays.stream(formats).forEach(sender::sendMessage);
+                if (sender instanceof Player) {
+                    Player player = (Player) sender;
+                    
+                    switch (args[0].toLowerCase()) {
+                        case "view":
+                            view(player, player);
+                            break;
+                        case "deposit":
+                        case "withdraw":
+                        case "transfer":
+                            sender.sendMessage("This menu is not ready.");
+                            break;
+                        default:
+                            return false;
+                    }
+                }
+                else {
+                    Arrays.stream(formats).forEach(sender::sendMessage);
+                }
                 break;
             }
             case 2: {
@@ -33,7 +52,8 @@ public class AccountCommand extends CommandBase {
                     
                     switch (args[0].toLowerCase()) {
                         case "view":
-                            view(player);
+                            Player target = Bukkit.getPlayer(args[1]);
+                            view(player, target);
                             break;
                         case "deposit":
                         case "withdraw":
@@ -50,11 +70,14 @@ public class AccountCommand extends CommandBase {
         return true;
     }
     
-    private void view(Player player) {
+    private void view(Player player, Player target) {
         Currency currency = getCurrency(player);
         
-        if (currency != null) {
-            AccountRecords.getMenu(player, currency, (menu) -> menu.displayTo(player));
+        if (target == null) {
+            player.sendMessage("That player is not online.");
+        }
+        else if (currency != null) {
+            AccountRecords.getMenu(target, currency, (menu) -> menu.displayTo(player));
         }
     }
     

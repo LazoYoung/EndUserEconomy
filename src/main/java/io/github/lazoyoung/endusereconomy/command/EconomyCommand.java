@@ -87,7 +87,7 @@ public class EconomyCommand extends CommandBase {
                 currencySel.put(id, new Currency(economy, currency));
             }
         } catch (IllegalArgumentException e) {
-            sender.sendMessage(e.getMessage());
+            sender.sendMessage("Unknown economy: " + economyArg);
             return;
         }
         

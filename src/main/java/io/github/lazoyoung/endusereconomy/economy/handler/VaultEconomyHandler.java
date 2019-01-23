@@ -1,9 +1,14 @@
 package io.github.lazoyoung.endusereconomy.economy.handler;
 
+import io.github.lazoyoung.endusereconomy.database.BankTable;
+import io.github.lazoyoung.endusereconomy.database.Database;
+import io.github.lazoyoung.endusereconomy.economy.Currency;
+import io.github.lazoyoung.endusereconomy.economy.Economy;
 import net.ess3.api.events.UserBalanceUpdateEvent;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -24,7 +29,22 @@ public class VaultEconomyHandler extends AbstractEconomyHandler implements Liste
     
     @EventHandler
     public void onBalanceUpdate(UserBalanceUpdateEvent event) {
-        // TODO log transaction
+        int newBal = 0, oldBal = 0;
+        try {
+            oldBal = event.getOldBalance().toBigInteger().intValue();
+            newBal = event.getNewBalance().toBigInteger().intValueExact();
+        } catch (ArithmeticException e) {
+            e.printStackTrace();
+        }
+        Player player = event.getPlayer();
+        BankTable table = (BankTable) Database.getTable(Database.BANK_TRANSACTION);
+        int amount = Math.abs(newBal - oldBal);
+        
+        if (newBal > oldBal) {
+            table.recordDeposit(new Currency(Economy.VAULT), amount, newBal, player.getName(), null);
+        } else if (newBal < oldBal) {
+            table.recordWithdraw(new Currency(Economy.VAULT), amount, newBal, player.getName(), null);
+        }
     }
     
     @Override

@@ -5,31 +5,39 @@ import io.github.lazoyoung.endusereconomy.database.BankTable;
 import io.github.lazoyoung.endusereconomy.database.Database;
 import io.github.lazoyoung.endusereconomy.economy.Currency;
 
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class Transaction {
+public abstract class Transaction {
     
     private String note;
     private int amount;
     private int result;
-    private Date date;
+    private Timestamp date;
     private Currency currency;
     
-    public Transaction(int amount, int result, Date date, Currency currency) {
-        new Transaction(amount, result, date, currency, null);
+    Transaction(int amount, int result, Timestamp date, Currency currency) {
+        this(amount, result, date, currency, null);
     }
     
-    public Transaction(int amount, int result, Date date, Currency currency, String note) {
+    Transaction(int amount, int result, Timestamp date, Currency currency, String note) {
         this.note = note;
         this.amount = amount;
         this.result = result;
         this.date = date;
         this.currency = currency;
+    }
+    
+    public static void getRecordsReversed(String user, Currency currency, int maxCount, Consumer<List<Transaction>> records) {
+        getRecords(user, currency, maxCount, (list) -> {
+            Collections.reverse(list);
+            records.accept(list);
+        });
     }
     
     public static void getRecords(final String user, final Currency currency, int maxCount, Consumer<List<Transaction>> records) {
@@ -46,7 +54,7 @@ public class Transaction {
                     int result = resultSet.getInt("result");
                     String sender = resultSet.getString("sender");
                     String receiver = resultSet.getString("receiver");
-                    Date date = resultSet.getDate("date");
+                    Timestamp date = resultSet.getTimestamp("date");
                     String note = resultSet.getString("note");
                     
                     switch (type) {
@@ -74,19 +82,21 @@ public class Transaction {
         table.getRecords(user, currency, maxCount, callback);
     }
     
+    public abstract TransactionType getType();
+    
     public String getNote() {
         return note;
     }
     
-    public double getAmount() {
+    public int getAmount() {
         return amount;
     }
     
-    public double getResult() {
+    public int getResult() {
         return result;
     }
     
-    public Date getDate() {
+    public Timestamp getDate() {
         return date;
     }
     

@@ -131,6 +131,7 @@ public class Main extends JavaPlugin {
             } catch (InstantiationException | IllegalAccessException e) {
                 e.printStackTrace();
             }
+            log("Hooked economy: " + pluginName);
         }
     }
     
