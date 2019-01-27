@@ -1,9 +1,11 @@
 package io.github.lazoyoung.endusereconomy.bank.transaction;
 
 import io.github.lazoyoung.database_util.Callback;
+import io.github.lazoyoung.endusereconomy.Main;
 import io.github.lazoyoung.endusereconomy.database.BankTable;
 import io.github.lazoyoung.endusereconomy.database.Database;
 import io.github.lazoyoung.endusereconomy.economy.Currency;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -40,44 +42,51 @@ public abstract class Transaction {
         });
     }
     
-    public static void getRecords(final String user, final Currency currency, int maxCount, Consumer<List<Transaction>> records) {
+    public static void getRecords(String user, final Currency currency, int maxCount, Consumer<List<Transaction>> records) {
+        final String userName = user.toLowerCase();
         BankTable table = (BankTable) Database.getTable(Database.BANK_TRANSACTION);
         Callback<ResultSet, SQLException> callback = (resultSet, thrown) -> {
             if (thrown != null)
                 return;
             
             List<Transaction> list = new ArrayList<>();
-            try {
-                while (resultSet.next()) {
-                    TransactionType type = TransactionType.valueOf(resultSet.getString("type").toUpperCase());
-                    int amount = resultSet.getInt("amount");
-                    int result = resultSet.getInt("result");
-                    String sender = resultSet.getString("sender");
-                    String receiver = resultSet.getString("receiver");
-                    Timestamp date = resultSet.getTimestamp("date");
-                    String note = resultSet.getString("note");
-                    
-                    switch (type) {
-                        case DEPOSIT:
-                            list.add(new Deposit(user, amount, result, date, currency, note));
-                            break;
-                        case WITHDRAW:
-                            list.add(new Withdraw(user, amount, result, date, currency));
-                            break;
-                        case TRANSFER: {
-                            if (sender.equals(user)) {
-                                list.add(new Send(user, sender, amount, result, date, currency, note));
-                            } else if (receiver.equals(user)) {
-                                list.add(new Receive(user, receiver, amount, result, date, currency, note));
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    try {
+                        while (resultSet.next()) {
+                            TransactionType type = TransactionType.valueOf(resultSet.getString("type").toUpperCase());
+                            int amount = resultSet.getInt("amount");
+                            int senderResult = resultSet.getInt("senderResult");
+                            int receiverResult = resultSet.getInt("receiverResult");
+                            String sender = resultSet.getString("sender");
+                            String receiver = resultSet.getString("receiver");
+                            Timestamp date = resultSet.getTimestamp("date");
+                            String note = resultSet.getString("note");
+            
+                            switch (type) {
+                                case DEPOSIT:
+                                    list.add(new Deposit(userName, amount, senderResult, date, currency, note));
+                                    break;
+                                case WITHDRAW:
+                                    list.add(new Withdraw(userName, amount, senderResult, date, currency));
+                                    break;
+                                case TRANSFER: {
+                                    if (sender.equals(userName)) {
+                                        list.add(new Send(userName, sender, amount, senderResult, date, currency, note));
+                                    } else if (receiver.equals(userName)) {
+                                        list.add(new Receive(userName, receiver, amount, receiverResult, date, currency, note));
+                                    }
+                                    break;
+                                }
                             }
-                            break;
                         }
+                        records.accept(list);
+                    } catch (SQLException e) {
+                        e.printStackTrace();
                     }
                 }
-                records.accept(list);
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
+            }.runTask(Main.getInstance());
         };
         table.getRecords(user, currency, maxCount, callback);
     }

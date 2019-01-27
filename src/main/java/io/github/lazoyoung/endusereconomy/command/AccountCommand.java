@@ -1,8 +1,10 @@
 package io.github.lazoyoung.endusereconomy.command;
 
-import io.github.lazoyoung.endusereconomy.bank.AccountRecords;
+import io.github.lazoyoung.endusereconomy.bank.menu.AccountDeposit;
+import io.github.lazoyoung.endusereconomy.bank.menu.AccountView;
 import io.github.lazoyoung.endusereconomy.economy.Currency;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -19,65 +21,78 @@ public class AccountCommand extends CommandBase {
                 alias + " [view/deposit/withdraw/transfer] [<player>]"
         };
         
+        if (!(sender instanceof Player)) {
+            sender.sendMessage("You cannot open account menu in console.");
+            return true;
+        }
+        
         switch (args.length) {
             case 0: {
                 Arrays.stream(formats).forEach(sender::sendMessage);
                 break;
             }
             case 1: {
-                if (sender instanceof Player) {
-                    Player player = (Player) sender;
-                    
-                    switch (args[0].toLowerCase()) {
-                        case "view":
-                            view(player, player);
-                            break;
-                        case "deposit":
-                        case "withdraw":
-                        case "transfer":
-                            sender.sendMessage("This menu is not ready.");
-                            break;
-                        default:
-                            return false;
-                    }
-                }
-                else {
-                    Arrays.stream(formats).forEach(sender::sendMessage);
+                switch (args[0].toLowerCase()) {
+                    case "view":
+                        view(sender, null);
+                        break;
+                    case "deposit":
+                        deposit(sender);
+                        break;
+                    case "withdraw":
+                    case "transfer":
+                        sender.sendMessage("This menu is not ready.");
+                        break;
+                    default:
+                        return false;
                 }
                 break;
             }
             case 2: {
-                if (sender instanceof Player) {
-                    Player player = (Player) sender;
-                    
-                    switch (args[0].toLowerCase()) {
-                        case "view":
-                            Player target = Bukkit.getPlayer(args[1]);
-                            view(player, target);
-                            break;
-                        case "deposit":
-                        case "withdraw":
-                        case "transfer":
-                            sender.sendMessage("This menu is not ready.");
-                            break;
-                        default:
-                            return false;
-                    }
+                switch (args[0].toLowerCase()) {
+                    case "view":
+                        view(sender, args[1]);
+                        break;
+                    case "deposit":
+                        return false;
+                    case "withdraw":
+                    case "transfer":
+                        sender.sendMessage("This menu is not ready.");
+                        break;
+                    default:
+                        return false;
                 }
+
                 break;
             }
         }
         return true;
     }
     
-    private void view(Player player, Player target) {
-        Currency currency = getCurrency(player);
+    @SuppressWarnings("deprecated")
+    private void view(CommandSender sender, String target) {
+        Currency currency = getCurrency(sender);
+        Player viewer = (Player) sender;
         
-        if (target == null) {
-            player.sendMessage("That player is not online.");
+        if (currency != null) {
+            if (target != null) {
+                OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(target);
+                if (targetPlayer.hasPlayedBefore()) {
+                    AccountView.displayTo(viewer, targetPlayer, currency);
+                } else {
+                    sender.sendMessage("That player is unknown in this server.");
+                }
+            } else {
+                AccountView.displayTo(viewer, viewer, currency);
+            }
         }
-        else if (currency != null) {
-            AccountRecords.getMenu(target, currency, (menu) -> menu.displayTo(player));
+    }
+    
+    private void deposit(CommandSender sender) {
+        Currency currency = getCurrency(sender);
+        
+        if (currency != null) {
+            AccountDeposit.displayTo((Player) sender, currency);
         }
     }
     

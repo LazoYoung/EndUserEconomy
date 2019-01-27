@@ -1,5 +1,9 @@
 package io.github.lazoyoung.endusereconomy.economy.handler;
 
+import io.github.lazoyoung.endusereconomy.database.BankTable;
+import io.github.lazoyoung.endusereconomy.database.Database;
+import io.github.lazoyoung.endusereconomy.economy.Currency;
+import io.github.lazoyoung.endusereconomy.economy.Economy;
 import me.xanium.gemseconomy.api.GemsEconomyAPI;
 import me.xanium.gemseconomy.economy.AccountManager;
 import me.xanium.gemseconomy.event.GemsPayEvent;
@@ -19,14 +23,28 @@ public class GemsEconomyHandler extends AbstractEconomyHandler implements Listen
     @EventHandler
     public void onPay(GemsPayEvent event) {
         if (!event.isCancelled()) {
-            // TODO log transaction
+            me.xanium.gemseconomy.economy.Currency c = event.getCurrency();
+            double amount = event.getAmount();
+            String sender = event.getPayer().getNickname();
+            String receiver = event.getReceived().getNickname();
+            int senderResult = (int) Math.abs(event.getPayer().getBalance(c) - amount);
+            int receiverResult = (int) Math.abs(event.getReceived().getBalance(c) + amount);
+            BankTable table = (BankTable) Database.getTable(Database.BANK_TRANSACTION);
+            table.recordTransfer(new Currency(Economy.GEMS_ECONOMY, c.getSingular()), (int) amount, senderResult, receiverResult, sender, receiver, null);
         }
     }
     
     @EventHandler
     public void onTransfer(GemsTransactionEvent event) {
         if (!event.isCancelled()) {
-            // TODO log transaction
+            me.xanium.gemseconomy.economy.Currency c = event.getCurrency();
+            double amount = event.getAmount();
+            String player = event.getAccount().getNickname();
+            
+            switch (event.getType()) {
+                case DEPOSIT:
+                
+            }
         }
     }
     

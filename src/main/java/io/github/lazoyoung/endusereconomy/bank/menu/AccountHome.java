@@ -1,4 +1,4 @@
-package io.github.lazoyoung.endusereconomy.bank;
+package io.github.lazoyoung.endusereconomy.bank.menu;
 
 import me.kangarko.ui.menu.Menu;
 import me.kangarko.ui.menu.menues.MenuStandard;
@@ -9,7 +9,7 @@ public class AccountHome extends MenuStandard {
     
     private AccountHome() {
         super(null);
-        setTitle("Account view");
+        setTitle("Account home");
     }
     
     static Menu getMenu() {

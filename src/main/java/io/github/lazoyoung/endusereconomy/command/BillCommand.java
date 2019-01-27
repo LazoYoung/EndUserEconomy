@@ -10,9 +10,11 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -227,8 +229,8 @@ public class BillCommand extends CommandBase {
         BillFactory.getBillFromItem(item, callback);
     }
     
+    @Deprecated
     private void inspect(CommandSender sender, String scope, @Nullable ItemStack item) {
-        // TODO implement record inspection
         sender.sendMessage("This is not implemented yet.");
     }
     
@@ -297,7 +299,11 @@ public class BillCommand extends CommandBase {
                     case 2:
                         Currency currency = getCurrency(sender);
                         if (currency != null) {
-                            comps.addAll(Config.BILL.get().getConfigurationSection(currency.toString()).getKeys(false));
+                            Set<String> list = getList(currency.toString());
+                            if (list != null) {
+                                comps.addAll(list);
+                                break;
+                            }
                         } else {
                             return comps;
                         }
@@ -314,12 +320,13 @@ public class BillCommand extends CommandBase {
                 switch (args.length) {
                     case 2: {
                         Currency currency = getCurrency(sender);
-                        Set<String> units = null;
                         if (currency != null) {
-                            units = Config.BILL.get().getConfigurationSection(currency.toString()).getKeys(false);
-                            if (units != null) {
-                                comps.addAll(units);
+                            Set<String> list = getList(currency.toString());
+                            if (list != null) {
+                                comps.addAll(list);
+                                break;
                             }
+                            comps.add(ChatColor.RED + "[No result]");
                         } else {
                             return comps;
                         }
@@ -353,5 +360,13 @@ public class BillCommand extends CommandBase {
         }
         
         return comps;
+    }
+    
+    private Set<String> getList(String path) {
+        ConfigurationSection section = Config.BILL.get().getConfigurationSection(path);
+        if (section != null) {
+            return section.getKeys(false);
+        }
+        return null;
     }
 }

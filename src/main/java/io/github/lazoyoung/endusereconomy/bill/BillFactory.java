@@ -1,12 +1,14 @@
 package io.github.lazoyoung.endusereconomy.bill;
 
 import io.github.lazoyoung.endusereconomy.Config;
+import io.github.lazoyoung.endusereconomy.Main;
 import io.github.lazoyoung.endusereconomy.database.BillTable;
 import io.github.lazoyoung.endusereconomy.database.Database;
 import io.github.lazoyoung.endusereconomy.economy.Currency;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -50,14 +52,13 @@ public class BillFactory implements Bill {
         BillFactory factory = new BillFactory(currency, unit, origin);
         BillTable table = (BillTable) Database.getTable(Database.BILL_RECORD);
         Consumer<Integer> addResult = (id -> {
-            if (id == null) {
-                callback.accept(null);
-                return;
+            Bill ret = null;
+            if (id != null) {
+                factory.id = id;
+                ret = factory;
             }
-            factory.id = id;
-            callback.accept(factory);
+            callback.accept(ret);
         });
-        
         table.addRecord(addResult, factory);
     }
     
@@ -89,16 +90,20 @@ public class BillFactory implements Bill {
     }
     
     public static void getBillFromItem(@Nonnull ItemStack item, Consumer<Bill> callback) {
-        for (String lore : item.getItemMeta().getLore()) {
-            if (lore.startsWith("ID ")) {
-                int id;
-                try {
-                    id = Integer.parseInt(lore.substring(3));
-                } catch (Exception e) {
-                    break;
+        ItemMeta meta = item.getItemMeta();
+        
+        if (meta != null && meta.hasLore()) {
+            for (String lore : meta.getLore()) {
+                if (lore.startsWith("BILL ID ")) {
+                    int id;
+                    try {
+                        id = Integer.parseInt(lore.substring(8));
+                    } catch (Exception e) {
+                        break;
+                    }
+                    getBill(id, callback);
+                    return;
                 }
-                getBill(id, callback);
-                return;
             }
         }
         callback.accept(null);
@@ -119,7 +124,7 @@ public class BillFactory implements Bill {
             if (meta.hasLore()) {
                 lore = meta.getLore();
             }
-            lore.add("ID " + id);
+            lore.add("BILL ID " + id);
             meta.setLore(lore);
             itemStack.setItemMeta(meta);
             itemStack.setAmount(1);

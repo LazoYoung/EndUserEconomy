@@ -58,7 +58,7 @@ public class Main extends JavaPlugin {
     }
     
     public static Plugin getInstance() {
-        return Bukkit.getPluginManager().getPlugin(pluginName);
+        return JavaPlugin.getPlugin(Main.class);
     }
     
     public static void log(String... message) {
@@ -77,11 +77,16 @@ public class Main extends JavaPlugin {
             return;
         }
         
-        pluginName = getName();
-        initCommands();
-        initDatabase();
-        UIDesignerAPI.setPlugin(this);
-        Arrays.stream(Economy.values()).forEach(this::loadEconomy);
+        try {
+            pluginName = getName();
+            initCommands();
+            initDatabase();
+            UIDesignerAPI.setPlugin(this);
+            Arrays.stream(Economy.values()).forEach(this::loadEconomy);
+        } catch (Exception e) {
+            e.printStackTrace();
+            terminate(this, "Failed to initialize plugin.");
+        }
     }
     
     @Override
@@ -90,17 +95,12 @@ public class Main extends JavaPlugin {
     }
     
     private void initDatabase() {
-        try {
-            HikariConfig config = Database.getHikariConfig();
-            Connector connector = new Connector(Bukkit.getLogger(), config);
-            BillTable billTable = new BillTable(connector);
-            BankTable bankTable = new BankTable(connector);
-            Database.registerTable(Database.BILL_RECORD, billTable);
-            Database.registerTable(Database.BANK_TRANSACTION, bankTable);
-        } catch (Exception e) {
-            e.printStackTrace();
-            terminate(this, "Failed to initialize database.");
-        }
+        HikariConfig config = Database.getHikariConfig();
+        Connector connector = new Connector(Bukkit.getLogger(), config);
+        BillTable billTable = new BillTable(connector);
+        BankTable bankTable = new BankTable(connector);
+        Database.registerTable(Database.BILL_RECORD, billTable);
+        Database.registerTable(Database.BANK_TRANSACTION, bankTable);
         log("Successfully connected to database.");
     }
     
