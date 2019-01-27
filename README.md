@@ -1,12 +1,15 @@
 # EndUserEconomy
-Use bank to convert your virtual money into real item in Minecraft.
+This plugin will offer you the essential features for your economy-theme server.
 
-## Vault account
-This plugin has built-in economy system. Also you can plug other economy plugins which are linked to Vault.
-The vault accounts are identical to bank accounts.
+### Introduce bill to your players
+Let your players use item-based money to trade items.  
+Also, save bill or send money via bank!
 
-## Multiple currency
+### Link multiple economy plugins
+Link some external economy plugins with/without Vault.
 
-## Security
-Prevent hackers from distributing fake money items in your server.  
-The plugin will not only discriminate all the money, but also keep track of the flow.
+### Bank accounts
+A player can own a bank account, whose balance is synchronized with the linked economy in real-time.
+
+### Security
+Prevent hackers from abusing fake money items. Leave this plugin do the job.
