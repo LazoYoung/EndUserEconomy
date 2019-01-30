@@ -13,7 +13,6 @@ import io.github.lazoyoung.endusereconomy.economy.handler.EconomyHandler;
 import me.kangarko.ui.UIDesignerAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
@@ -26,50 +25,6 @@ import java.util.Arrays;
 public class Main extends JavaPlugin {
     
     static String pluginName;
-    private static PluginCommand economyCmd;
-    private static PluginCommand billCmd;
-    private static PluginCommand accountCmd;
-    
-    public static void terminate(@Nonnull Plugin suspender, @Nullable String cause) {
-        if (cause == null) {
-            cause = "Plugin has been suspended.";
-        }
-        
-        String logLine1 = "The plugin is terminated by " + suspender;
-        String logLine2 = "Reason: " + cause;
-        final String message = cause;
-        CommandExecutor executor = (sender, command, label, args) -> {
-            sender.sendMessage(message);
-            return true;
-        };
-        
-        if (suspender.getName().equals(pluginName)) {
-            logLine1 = "The plugin is terminated.";
-        }
-        
-        shutdownDatabasePool();
-        log(ChatColor.YELLOW, logLine1, logLine2);
-        economyCmd.setExecutor(executor);
-        billCmd.setExecutor(executor);
-    }
-    
-    public static void shutdownDatabasePool() {
-        Arrays.stream(Database.values()).forEach(Database::shutdown);
-    }
-    
-    public static Plugin getInstance() {
-        return JavaPlugin.getPlugin(Main.class);
-    }
-    
-    public static void log(String... message) {
-        String prefix = "[" + pluginName + "] ";
-        Arrays.stream(message).forEachOrdered(string -> getInstance().getServer().getConsoleSender().sendMessage(prefix + string));
-    }
-    
-    public static void log(ChatColor color, String... message) {
-        String prefix = "[" + pluginName + "] ";
-        Arrays.stream(message).forEachOrdered(string -> getInstance().getServer().getConsoleSender().sendMessage(color + prefix + string));
-    }
     
     @Override
     public void onEnable() {
@@ -91,7 +46,7 @@ public class Main extends JavaPlugin {
     
     @Override
     public void onDisable() {
-        shutdownDatabasePool();
+        Arrays.stream(Database.values()).forEach(Database::shutdown);
     }
     
     private void initDatabase() {
@@ -104,13 +59,32 @@ public class Main extends JavaPlugin {
         log("Successfully connected to database.");
     }
     
+    public static void terminate(@Nonnull Plugin suspender, @Nullable String cause) {
+        log("Plugin is being terminated.", "Suspender: " + suspender.getName() + ", Cause: " + cause);
+        Bukkit.getPluginManager().disablePlugin(Main.getInstance());
+    }
+    
+    public static Plugin getInstance() {
+        return JavaPlugin.getPlugin(Main.class);
+    }
+    
+    public static void log(String... message) {
+        String prefix = "[" + pluginName + "] ";
+        Arrays.stream(message).forEachOrdered(string -> getInstance().getServer().getConsoleSender().sendMessage(prefix + string));
+    }
+    
+    public static void log(ChatColor color, String... message) {
+        String prefix = "[" + pluginName + "] ";
+        Arrays.stream(message).forEachOrdered(string -> getInstance().getServer().getConsoleSender().sendMessage(color + prefix + string));
+    }
+    
     private void initCommands() {
         BillCommand billExec = new BillCommand();
         EconomyCommand ecoExec = new EconomyCommand();
         AccountCommand accountExec = new AccountCommand();
-        economyCmd = getCommand("economy");
-        billCmd = getCommand("bill");
-        accountCmd = getCommand("account");
+        PluginCommand economyCmd = getCommand("economy");
+        PluginCommand billCmd = getCommand("bill");
+        PluginCommand accountCmd = getCommand("account");
         economyCmd.setExecutor(ecoExec);
         economyCmd.setTabCompleter(ecoExec);
         billCmd.setExecutor(billExec);
@@ -128,11 +102,13 @@ public class Main extends JavaPlugin {
                 EconomyHandler handler = (EconomyHandler) type.getHandlerClass().newInstance();
                 EconomyHandler.register(type, handler);
                 getServer().getPluginManager().registerEvents((Listener) handler, this);
-            } catch (InstantiationException | IllegalAccessException e) {
+                log("Hooked economy: " + pluginName);
+                return;
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-            log("Hooked economy: " + pluginName);
         }
+        log("Failed to load economy: " + pluginName);
     }
     
     private boolean isServerCompatible() {

@@ -14,6 +14,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 public class VaultEconomyHandler extends AbstractEconomyHandler implements Listener {
     
@@ -59,12 +60,24 @@ public class VaultEconomyHandler extends AbstractEconomyHandler implements Liste
     
     @Override
     public EconomyResponse deposit(OfflinePlayer player, @Nullable String currency, double amount) {
-        return api.depositPlayer(player, amount);
+        double bal = api.getBalance(player);
+        EconomyResponse response = api.withdrawPlayer(player, amount);
+        if (response.transactionSuccess()) {
+            UserBalanceUpdateEvent event = new UserBalanceUpdateEvent((Player) player, BigDecimal.valueOf(bal), BigDecimal.valueOf(bal + amount));
+            Bukkit.getPluginManager().callEvent(event);
+        }
+        return response;
     }
     
     @Override
     public EconomyResponse withdraw(OfflinePlayer player, @Nullable String currency, double amount) {
-        return api.withdrawPlayer(player, amount);
+        double bal = api.getBalance(player);
+        EconomyResponse response = api.withdrawPlayer(player, amount);
+        if (response.transactionSuccess()) {
+            UserBalanceUpdateEvent event = new UserBalanceUpdateEvent((Player) player, BigDecimal.valueOf(bal), BigDecimal.valueOf(bal - amount));
+            Bukkit.getPluginManager().callEvent(event);
+        }
+        return response;
     }
     
     @Override
@@ -72,13 +85,20 @@ public class VaultEconomyHandler extends AbstractEconomyHandler implements Liste
         if (hasAccount(player)) {
             double bal = api.getBalance(player);
             double dif = amount - bal;
+            EconomyResponse response;
             if (dif == 0) {
                 return new EconomyResponse(0, bal, EconomyResponse.ResponseType.SUCCESS, null);
             }
             if (dif > 0) {
-                return api.depositPlayer(player, dif);
+                response = api.depositPlayer(player, dif);
+            } else {
+                response = api.withdrawPlayer(player, -dif);
             }
-            return api.withdrawPlayer(player, -dif);
+            if (response.transactionSuccess()) {
+                UserBalanceUpdateEvent event = new UserBalanceUpdateEvent((Player) player, BigDecimal.valueOf(bal), BigDecimal.valueOf(bal + dif));
+                Bukkit.getPluginManager().callEvent(event);
+            }
+            return response;
         }
         return new EconomyResponse(0, 0, EconomyResponse.ResponseType.FAILURE, "Account was not found.");
     }

@@ -47,7 +47,7 @@ public class BillTable extends Table {
                         "date TIMESTAMP NOT NULL COMMENT 'Birth or expiration date.', " +
                         "expired BOOLEAN NOT NULL DEFAULT FALSE, " +
                         "origin VARCHAR(30) COMMENT 'Can be a player or the server.', " +
-                        "terminator VARCHAR(30) COMMENT 'Can be a player or the server.', " + // TODO delete this column
+                        "terminator VARCHAR(30) COMMENT 'Can be a player or the server.', " +
                         "PRIMARY KEY (id)" +
                         ");");
                 execute(null, "SET NAMES 'utf8';");

@@ -1,19 +1,20 @@
 package io.github.lazoyoung.endusereconomy.bill;
 
 import io.github.lazoyoung.endusereconomy.Config;
-import io.github.lazoyoung.endusereconomy.Main;
 import io.github.lazoyoung.endusereconomy.database.BillTable;
 import io.github.lazoyoung.endusereconomy.database.Database;
 import io.github.lazoyoung.endusereconomy.economy.Currency;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class BillFactory implements Bill {
@@ -73,20 +74,53 @@ public class BillFactory implements Bill {
         
         if (alias != null) {
             ItemMeta meta = itemStack.getItemMeta();
-            StringBuilder displayName = new StringBuilder(meta.getDisplayName());
+            StringBuilder displayName = new StringBuilder();
             for (String str : alias) {
                 displayName.append(str).append(" ");
             }
             meta.setDisplayName(displayName.substring(0, displayName.length() - 1));
             itemStack.setItemMeta(meta);
+            itemStack.setAmount(1);
         }
         
         config.set(path, itemStack);
         Config.BILL.save(config);
     }
     
+    public static Set<Integer> getRegisteredUnits(Currency currency) {
+        ConfigurationSection section = Config.BILL.get().getConfigurationSection(currency.toString());
+        if (section != null) {
+            Set<Integer> list = new HashSet<>();
+            for (String s : section.getKeys(false)) {
+                list.add(Integer.parseInt(s));
+            }
+            return list;
+        }
+        return null;
+    }
+    
     public static ItemStack getItemBase(Currency currency, int unit) {
         return Config.BILL.get().getItemStack(currency.toString() + "." + unit);
+    }
+    
+    @Override
+    public ItemStack getItem() {
+        ItemStack itemStack = getItemBase(currency, unit);
+        if (itemStack != null) {
+            itemStack = itemStack.clone();
+            ItemMeta meta = itemStack.getItemMeta();
+            if (meta != null) {
+                List<String> lore = new ArrayList<>();
+                if (meta.hasLore()) {
+                    lore = meta.getLore();
+                }
+                lore.add("BILL ID " + id);
+                meta.setLore(lore);
+                itemStack.setItemMeta(meta);
+            }
+            itemStack.setAmount(1);
+        }
+        return itemStack;
     }
     
     public static void getBillFromItem(@Nonnull ItemStack item, Consumer<Bill> callback) {
@@ -113,23 +147,6 @@ public class BillFactory implements Bill {
     public void discard(String director, Consumer<Boolean> callback) {
         BillTable table = (BillTable) Database.getTable(Database.BILL_RECORD);
         table.terminateRecord(id, director, callback);
-    }
-    
-    @Override
-    public ItemStack getItem() {
-        ItemStack itemStack = getItemBase(currency, unit).clone();
-        if (itemStack != null) {
-            ItemMeta meta = itemStack.getItemMeta();
-            List<String> lore = new ArrayList<>();
-            if (meta.hasLore()) {
-                lore = meta.getLore();
-            }
-            lore.add("BILL ID " + id);
-            meta.setLore(lore);
-            itemStack.setItemMeta(meta);
-            itemStack.setAmount(1);
-        }
-        return itemStack;
     }
     
     @Override

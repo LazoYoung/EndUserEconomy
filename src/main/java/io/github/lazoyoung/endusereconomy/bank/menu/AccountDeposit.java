@@ -1,5 +1,6 @@
 package io.github.lazoyoung.endusereconomy.bank.menu;
 
+import io.github.lazoyoung.endusereconomy.Main;
 import io.github.lazoyoung.endusereconomy.bill.Bill;
 import io.github.lazoyoung.endusereconomy.bill.BillFactory;
 import io.github.lazoyoung.endusereconomy.economy.Currency;
@@ -8,39 +9,46 @@ import me.kangarko.ui.menu.MenuButton;
 import me.kangarko.ui.menu.MenuClickLocation;
 import me.kangarko.ui.menu.menues.MenuStandard;
 import me.kangarko.ui.model.ItemCreator;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryAction;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
-public class AccountDeposit extends MenuStandard {
+public class AccountDeposit extends MenuStandard implements Listener {
     
     private ItemStack rightSignItem, leftSignItem, infoItem, returnItem;
     private Currency currency;
-    private Map<Integer,Bill> insertBills;
-    private List<ItemStack> insertItems;
     private List<Integer> processSlots;
-    private int amount;
     
-    private AccountDeposit() {
+    private AccountDeposit(Currency currency) {
         super(null);
         this.rightSignItem = ItemCreator.of(Material.BLACK_STAINED_GLASS_PANE).name("->").build().make();
         this.leftSignItem = ItemCreator.of(Material.BLACK_STAINED_GLASS_PANE).name("<-").build().make();
-        this.insertBills = new HashMap<>();
-        this.insertItems = new ArrayList<>();
         this.processSlots = new ArrayList<>();
-        this.amount = 0;
+        this.currency = currency;
+        this.infoItem = ItemCreator.of(Material.NETHER_STAR).name("클릭하여 입금").build().make();
+        this.returnItem = ItemCreator.of(Material.OAK_DOOR).name("뒤로가기").build().make();
+        setSize(27);
         setTitle("Deposit to account");
+        Bukkit.getPluginManager().registerEvents(this, Main.getInstance());
     }
     
     public static void displayTo(Player viewer, Currency currency) {
-        AccountDeposit menu = new AccountDeposit();
-        menu.currency = currency;
+        AccountDeposit menu = new AccountDeposit(currency);
         menu.displayTo(viewer);
     }
     
@@ -76,16 +84,15 @@ public class AccountDeposit extends MenuStandard {
         MenuButton info = new MenuButton() {
             @Override
             public void onClickedInMenu(Player player, Menu menu, ClickType click) {
-                if (insertBills.isEmpty()) {
-                    menu.animateTitle("Please insert the bill.");
+                if (getInserts(player.getOpenInventory().getTopInventory()).size() == 0) {
+                    menu.animateTitle(ChatColor.RED + "Please insert the bill.");
                     return;
                 }
-                
-                menu.animateTitle("Please wait...");
+                menu.animateTitle("Loading...");
             }
             @Override
             public ItemStack getItem() {
-                return ItemCreator.of(Material.NETHER_STAR).name("클릭하여 입금").lore("투입 금액: " + amount).build().make();
+                return infoItem;
             }
         };
         MenuButton returnBack = new MenuButton() {
@@ -95,11 +102,9 @@ public class AccountDeposit extends MenuStandard {
             }
             @Override
             public ItemStack getItem() {
-                return ItemCreator.of(Material.OAK_DOOR).name("뒤로가기").build().make();
+                return returnItem;
             }
         };
-        infoItem = info.getItem();
-        returnItem = returnBack.getItem();
         list.add(info);
         list.add(returnBack);
         return list;
@@ -122,25 +127,22 @@ public class AccountDeposit extends MenuStandard {
     @Override
     public void onMenuClick(Player player, int slot, InventoryAction action, ClickType click, ItemStack cursor, ItemStack clicked, boolean cancelled) {
         if (clicked.isSimilar(leftSignItem) || clicked.isSimilar(rightSignItem)) {
-            animateTitle("Please insert the bill.");
+            animateTitle(ChatColor.RED + "Please insert the bill.");
         }
         else if (isInlet(slot)) {
             switch (action) {
                 case NOTHING:
-                    return;
-                case PLACE_ALL:
-                case PLACE_SOME:
-                case PLACE_ONE:
-                    updateInsert(player, cursor.clone(), slot, false);
-                    break;
-                case SWAP_WITH_CURSOR:
-                    updateInsert(player, cursor.clone(), slot, true);
                     break;
                 case PICKUP_ALL:
                 case PICKUP_HALF:
                 case PICKUP_SOME:
                 case PICKUP_ONE:
-                    updateInsert(player, null, slot, true);
+                    addInsert(player, cursor.clone(), slot);
+                    break;
+                case PLACE_ALL:
+                case PLACE_SOME:
+                case PLACE_ONE:
+                    addInsert(player, cursor.clone(), slot);
                     break;
             }
         }
@@ -148,9 +150,32 @@ public class AccountDeposit extends MenuStandard {
     
     @Override
     public void onMenuClose(Player player, Inventory inv) {
-        if (!insertItems.isEmpty()) {
-            HashMap<Integer, ItemStack> map = player.getInventory().addItem(insertItems.toArray(new ItemStack[0]));
+        List<ItemStack> inserts = getInserts(inv);
+        if (inserts.size() > 0) {
+            HashMap<Integer, ItemStack> map = player.getInventory().addItem(inserts.toArray(new ItemStack[0]));
             map.forEach((index, item) -> player.getWorld().dropItem(player.getLocation(), item));
+            player.sendMessage("You have cancelled the transaction.");
+        }
+        HandlerList.unregisterAll(this);
+    }
+    
+    @EventHandler
+    public void onItemDrag(InventoryDragEvent event) {
+        if (getTitle().substring(2).equals(event.getView().getTitle())) {
+            Integer[] slots = event.getRawSlots().toArray(new Integer[0]);
+            InventoryView view = event.getView();
+            for (int slot : slots) {
+                if (slot < view.getTopInventory().getSize()) {
+                    if (slots.length == 1) {
+                        ItemStack item = event.getOldCursor().clone();
+                        addInsert((Player) event.getWhoClicked(), item, slot);
+                    } else {
+                        animateTitle(ChatColor.RED + "Do not drag items.");
+                        event.setCancelled(true);
+                        break;
+                    }
+                }
+            }
         }
     }
     
@@ -164,46 +189,57 @@ public class AccountDeposit extends MenuStandard {
         return null;
     }
     
+    private List<ItemStack> getInserts(Inventory inv) {
+        List<ItemStack> list = new ArrayList<>();
+        for (int i = 0; i < getSize(); i++) {
+            if (isInlet(i)) {
+                ItemStack item = inv.getItem(i);
+                if (item != null) {
+                    list.add(item);
+                }
+            }
+        }
+        return list;
+    }
+    
     private boolean isInlet(int slot) {
         return (1 < slot && slot < 7) || (10 < slot && slot < 16) || (19 < slot && slot < 25);
     }
     
-    private void updateInsert(Player player, ItemStack insert, int slot, boolean replaceOld) {
-        if (replaceOld) {
-            insertBills.remove(slot);
-        }
-        if (insert != null) {
-            processSlots.add(slot);
-            BillFactory.getBillFromItem(insert, (bill) -> {
-                if (checkItemValid(bill)) {
-                    amount += bill.getUnit();
-                    insertBills.put(slot, bill);
-                    insertItems.add(insert);
-                    restartMenu("Inserting " + bill.getUnit());
-                }
-                else {
-                    InventoryView view = player.getOpenInventory();
-                    HashMap<Integer,ItemStack> map = player.getInventory().addItem(insert);
-                    view.getTopInventory().setItem(slot, null);
-                    view.setCursor(null);
-                    map.values().forEach((item) -> player.getWorld().dropItem(player.getLocation(), item));
-                }
-                processSlots.remove(new Integer(slot));
-            });
-        }
+    private void addInsert(Player player, ItemStack insert, int slot) {
+        if (insert.getType().equals(Material.AIR))
+            return;
+        
+        processSlots.add(slot);
+        BillFactory.getBillFromItem(insert, (bill) -> {
+            if (!checkItemValid(bill)) {
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        InventoryView view = player.getOpenInventory();
+                        HashMap<Integer,ItemStack> map = player.getInventory().addItem(insert);
+                        view.getTopInventory().setItem(slot, null);
+                        view.setCursor(null);
+                        player.updateInventory();
+                        map.values().forEach((item) -> player.getWorld().dropItem(player.getLocation(), item));
+                    }
+                }.runTask(Main.getInstance());
+            }
+            processSlots.remove(new Integer(slot));
+        });
     }
     
     private boolean checkItemValid(Bill bill) {
         if (bill == null) {
-            animateTitle("That is not a bill.");
+            animateTitle(ChatColor.RED + "That is not a bill.");
             return false;
         }
         if (!bill.getCurrency().toString().equals(currency.toString())) {
-            animateTitle("The bill currency is invalid.");
+            animateTitle(ChatColor.RED + "The bill currency is invalid.");
             return false;
         }
         if (bill.isExpired()) {
-            animateTitle("The bill is expired.");
+            animateTitle(ChatColor.RED + "The bill is expired.");
             return false;
         }
         return true;

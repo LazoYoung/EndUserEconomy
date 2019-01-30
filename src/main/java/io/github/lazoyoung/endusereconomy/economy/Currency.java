@@ -46,6 +46,7 @@ public class Currency {
         return economy;
     }
     
+    // TODO define currency name
     @Nullable
     public String getName() {
         return currency;

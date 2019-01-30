@@ -2,6 +2,7 @@ package io.github.lazoyoung.endusereconomy.command;
 
 import io.github.lazoyoung.endusereconomy.bank.menu.AccountDeposit;
 import io.github.lazoyoung.endusereconomy.bank.menu.AccountView;
+import io.github.lazoyoung.endusereconomy.bank.menu.AccountWithdraw;
 import io.github.lazoyoung.endusereconomy.economy.Currency;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -40,6 +41,8 @@ public class AccountCommand extends CommandBase {
                         deposit(sender);
                         break;
                     case "withdraw":
+                        withdraw(sender);
+                        break;
                     case "transfer":
                         sender.sendMessage("This menu is not ready.");
                         break;
@@ -56,6 +59,7 @@ public class AccountCommand extends CommandBase {
                     case "deposit":
                         return false;
                     case "withdraw":
+                        return false;
                     case "transfer":
                         sender.sendMessage("This menu is not ready.");
                         break;
@@ -93,6 +97,14 @@ public class AccountCommand extends CommandBase {
         
         if (currency != null) {
             AccountDeposit.displayTo((Player) sender, currency);
+        }
+    }
+    
+    private void withdraw(CommandSender sender) {
+        Currency currency = getCurrency(sender);
+        
+        if (currency != null) {
+            AccountWithdraw.displayTo((Player) sender, currency);
         }
     }
     

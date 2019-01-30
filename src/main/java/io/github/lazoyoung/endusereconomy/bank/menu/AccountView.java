@@ -25,6 +25,7 @@ public class AccountView extends MenuStandard {
         this.user = user;
         this.curr = currency;
         this.balance = balance;
+        setSize(27);
         setTitle(user.getName() + "'s account");
     }
     
@@ -32,7 +33,6 @@ public class AccountView extends MenuStandard {
         int balance = (int) currency.getEconomyHandler().getBalance(targetPlayer, currency.getName());
         AccountView menu = new AccountView(targetPlayer, currency, balance);
         menu.displayTo(viewer);
-        menu.animateTitle("Loading...");
         menu.ready = true;
         menu.restartMenu(menu.getTitle());
     }

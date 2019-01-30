@@ -24,7 +24,7 @@ public class BankTable extends Table {
     @Override
     protected void init() {
         plugin = Main.getPlugin(Main.class);
-        Callback<Integer, SQLException> createResult = (result, e) -> {
+        final Callback<Integer, SQLException> createResult = (result, e) -> {
             if (e != null) {
                 Main.terminate(Main.getInstance(), "Failed to create table " + tableName + ". SQLException code: " + e.getSQLState());
             }
@@ -51,10 +51,10 @@ public class BankTable extends Table {
     }
     
     public void recordDeposit(Currency currency, int amount, int result, String user, String note) {
-        String economy = currency.getEconomy().getPluginName();
-        String currencyName = currency.getName();
-        String user_ = user.toLowerCase();
-        Callback<Integer, SQLException> insertResult = (key, thrown) -> {
+        final String economy = currency.getEconomy().getPluginName();
+        final String currencyName = currency.getName();
+        final String user_ = user.toLowerCase();
+        final Callback<Integer, SQLException> insertResult = (key, thrown) -> {
             if (thrown == null) {
                 Main.log(user_ + " deposit " + amount + " to his account in economy: " + currency.toString());
             }
@@ -71,10 +71,10 @@ public class BankTable extends Table {
     }
     
     public void recordWithdraw(Currency currency, int amount, int result, String user, String note) {
-        String economy = currency.getEconomy().getPluginName();
-        String currencyName = currency.getName();
-        String user_ = user.toLowerCase();
-        Callback<Integer, SQLException> insertResult = (key, thrown) -> {
+        final String economy = currency.getEconomy().getPluginName();
+        final String currencyName = currency.getName();
+        final String user_ = user.toLowerCase();
+        final Callback<Integer, SQLException> insertResult = (key, thrown) -> {
             if (thrown == null) {
                 Main.log(user_ + " withdrawn " + amount + " from his account in economy: " + currency.toString());
             }
@@ -84,18 +84,18 @@ public class BankTable extends Table {
             public void run() {
                 executeInsert(insertResult, "INSERT INTO " + tableName +
                                 " (type, economy, currency, amount, senderResult, receiverResult, receiver, date, note)" +
-                                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?);",
-                        TransactionType.WITHDRAW.toString(), economy, currencyName, amount, result, result, user_, user_, note);
+                                " VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?);",
+                        TransactionType.WITHDRAW.toString(), economy, currencyName, amount, result, result, user_, note);
             }
         }.runTaskAsynchronously(plugin);
     }
     
     public void recordTransfer(Currency currency, int amount, int senderResult, int receiverResult, String sender, String receiver, String note) {
-        String economy = currency.getEconomy().getPluginName();
-        String currencyName = currency.getName();
-        String sender_ = sender.toLowerCase();
-        String receiver_ = receiver.toLowerCase();
-        Callback<Integer, SQLException> insertResult = (key, thrown) -> {
+        final String economy = currency.getEconomy().getPluginName();
+        final String currencyName = currency.getName();
+        final String sender_ = sender.toLowerCase();
+        final String receiver_ = receiver.toLowerCase();
+        final Callback<Integer, SQLException> insertResult = (key, thrown) -> {
             if (thrown == null) {
                 Main.log(sender_ + " transferred " + amount + " to " + receiver_ + " in economy: " + currency.toString());
             }
@@ -115,9 +115,9 @@ public class BankTable extends Table {
      * @apiNote This callback is not thread safe. (Asynchronous)
      */
     public void getRecords(String user, Currency currency, int maxCount, Callback<ResultSet, SQLException> callback) {
-        String economy = currency.getEconomy().getPluginName();
-        String currencyName = currency.getName();
-        StringBuilder builder = new StringBuilder("SELECT * FROM " + tableName + " WHERE (sender = ? OR receiver = ?) AND economy = ? ");
+        final String economy = currency.getEconomy().getPluginName();
+        final String currencyName = currency.getName();
+        final StringBuilder builder = new StringBuilder("SELECT * FROM " + tableName + " WHERE (sender = ? OR receiver = ?) AND economy = ? ");
         new BukkitRunnable() {
             @Override
             public void run() {

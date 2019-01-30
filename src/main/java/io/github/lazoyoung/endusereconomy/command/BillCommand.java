@@ -1,6 +1,5 @@
 package io.github.lazoyoung.endusereconomy.command;
 
-import io.github.lazoyoung.endusereconomy.Config;
 import io.github.lazoyoung.endusereconomy.bill.Bill;
 import io.github.lazoyoung.endusereconomy.bill.BillFactory;
 import io.github.lazoyoung.endusereconomy.database.BillTable;
@@ -14,7 +13,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -141,7 +139,7 @@ public class BillCommand extends CommandBase {
             case 3: {
                 switch (args[0].toLowerCase()) {
                     case "setitem": {
-                        setItem((Player) sender, targetItem, (int) arguments[0], Arrays.copyOfRange(args, 2, args.length));
+                        setItem((Player) sender, targetItem, (int) arguments[0], (String[]) arguments[1]);
                         break;
                     }
                     case "print":
@@ -161,18 +159,25 @@ public class BillCommand extends CommandBase {
                 }
                 break;
             }
+            default: {
+                switch (args[0].toLowerCase()) {
+                    case "setitem":
+                        setItem((Player) sender, targetItem, (int) arguments[0], Arrays.copyOfRange(args, 2, args.length));
+                        break;
+                }
+            }
+            
         }
         return true;
     }
     
     private void setItem(Player player, ItemStack item, int unit, @Nullable String[] displayName) {
         Currency currency = getCurrency(player);
-        String[] alias = null;
         
         try {
             if (currency != null) {
-                BillFactory.defineItemBase(currency, unit, item, alias);
-                player.sendMessage("Base item set for " + currency.toString() + ".");
+                BillFactory.defineItemBase(currency, unit, item, displayName);
+                player.sendMessage("Base item " + unit + " set for currency: " + currency.toString() + ".");
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -299,9 +304,11 @@ public class BillCommand extends CommandBase {
                     case 2:
                         Currency currency = getCurrency(sender);
                         if (currency != null) {
-                            Set<String> list = getList(currency.toString());
+                            Set<Integer> list = BillFactory.getRegisteredUnits(currency);
                             if (list != null) {
-                                comps.addAll(list);
+                                for (int i : list) {
+                                    comps.add(String.valueOf(i));
+                                }
                                 break;
                             }
                         } else {
@@ -321,9 +328,11 @@ public class BillCommand extends CommandBase {
                     case 2: {
                         Currency currency = getCurrency(sender);
                         if (currency != null) {
-                            Set<String> list = getList(currency.toString());
+                            Set<Integer> list = BillFactory.getRegisteredUnits(currency);
                             if (list != null) {
-                                comps.addAll(list);
+                                for (int i : list) {
+                                    comps.add(String.valueOf(i));
+                                }
                                 break;
                             }
                             comps.add(ChatColor.RED + "[No result]");
@@ -360,13 +369,5 @@ public class BillCommand extends CommandBase {
         }
         
         return comps;
-    }
-    
-    private Set<String> getList(String path) {
-        ConfigurationSection section = Config.BILL.get().getConfigurationSection(path);
-        if (section != null) {
-            return section.getKeys(false);
-        }
-        return null;
     }
 }

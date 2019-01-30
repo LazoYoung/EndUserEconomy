@@ -6,15 +6,16 @@ description: Use bank to convert your virtual money into real item in Minecraft.
 author: LazoYoung
 load: STARTUP
 softdepend:
-- Vault
+  - Vault
+  - GemsEconomy
 
 commands:
-  economy:
-    usage: Type /economy to see help.
-    aliases: eco
+  usereco:
+    usage: Type /eue to see help.
+    aliases: [endeco, economy]
   bill:
     usage: Type /bill to see help.
-    aliases: [coin, papermoney]
+    aliases: [coin]
   account:
     usage: Type /account to see help.
     aliases: [bank]
