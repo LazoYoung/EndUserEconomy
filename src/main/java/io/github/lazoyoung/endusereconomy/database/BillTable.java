@@ -9,6 +9,7 @@ import io.github.lazoyoung.endusereconomy.bill.Bill;
 import io.github.lazoyoung.endusereconomy.bill.BillFactory;
 import io.github.lazoyoung.endusereconomy.economy.Currency;
 import io.github.lazoyoung.endusereconomy.economy.Economy;
+import io.github.lazoyoung.endusereconomy.util.Text;
 import org.bukkit.ChatColor;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
@@ -93,7 +94,7 @@ public class BillTable extends Table {
                     String terminator = result.getString("terminator");
                     ItemStack itemStack = BillFactory.getItemBase(currency, unit);
                     if (itemStack == null) {
-                        Main.log(ChatColor.RED, "Failed to load ItemStack of bill: " + id);
+                        Text.log(ChatColor.RED, "Failed to load ItemStack of bill: " + id);
                     }
                     else {
                         ret = new BillFactory(id, currency, unit, date, expired, origin, terminator);

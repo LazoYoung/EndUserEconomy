@@ -61,7 +61,7 @@ public class VaultEconomyHandler extends AbstractEconomyHandler implements Liste
     @Override
     public EconomyResponse deposit(OfflinePlayer player, @Nullable String currency, double amount) {
         double bal = api.getBalance(player);
-        EconomyResponse response = api.withdrawPlayer(player, amount);
+        EconomyResponse response = api.depositPlayer(player, amount);
         if (response.transactionSuccess()) {
             UserBalanceUpdateEvent event = new UserBalanceUpdateEvent((Player) player, BigDecimal.valueOf(bal), BigDecimal.valueOf(bal + amount));
             Bukkit.getPluginManager().callEvent(event);

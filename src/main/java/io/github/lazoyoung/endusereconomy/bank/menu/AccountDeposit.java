@@ -4,6 +4,8 @@ import io.github.lazoyoung.endusereconomy.Main;
 import io.github.lazoyoung.endusereconomy.bill.Bill;
 import io.github.lazoyoung.endusereconomy.bill.BillFactory;
 import io.github.lazoyoung.endusereconomy.economy.Currency;
+import io.github.lazoyoung.endusereconomy.economy.handler.EconomyHandler;
+import io.github.lazoyoung.endusereconomy.util.Text;
 import me.kangarko.ui.menu.Menu;
 import me.kangarko.ui.menu.MenuButton;
 import me.kangarko.ui.menu.MenuClickLocation;
@@ -27,18 +29,21 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AccountDeposit extends MenuStandard implements Listener {
     
     private ItemStack rightSignItem, leftSignItem, infoItem, returnItem;
     private Currency currency;
     private List<Integer> processSlots;
+    private Map<Integer,Integer> inserts; // key: slot, value: amount
     
     private AccountDeposit(Currency currency) {
         super(null);
         this.rightSignItem = ItemCreator.of(Material.BLACK_STAINED_GLASS_PANE).name("->").build().make();
         this.leftSignItem = ItemCreator.of(Material.BLACK_STAINED_GLASS_PANE).name("<-").build().make();
         this.processSlots = new ArrayList<>();
+        this.inserts = new HashMap<>();
         this.currency = currency;
         this.infoItem = ItemCreator.of(Material.NETHER_STAR).name("클릭하여 입금").build().make();
         this.returnItem = ItemCreator.of(Material.OAK_DOOR).name("뒤로가기").build().make();
@@ -84,11 +89,46 @@ public class AccountDeposit extends MenuStandard implements Listener {
         MenuButton info = new MenuButton() {
             @Override
             public void onClickedInMenu(Player player, Menu menu, ClickType click) {
-                if (getInserts(player.getOpenInventory().getTopInventory()).size() == 0) {
+                if (inserts.size() == 0) {
                     menu.animateTitle(ChatColor.RED + "Please insert the bill.");
                     return;
                 }
-                menu.animateTitle("Loading...");
+                
+                int sum = 0;
+                for (int amount : inserts.values()) {
+                    sum += amount;
+                }
+                final int deposit = sum;
+                final EconomyHandler eco = currency.getEconomyHandler();
+                List<ItemStack> insertItems = getInserts(player.getOpenInventory().getTopInventory());
+                int est = deposit + (int) eco.getBalance(player, currency.getName());
+                String[] infoLore = {"투입 금액: " + sum, "예상 잔고: " + est};
+                MenuButton confirmBtn = new MenuButton() {
+                    @Override
+                    public void onClickedInMenu(Player pl, Menu menu, ClickType click) {
+                        eco.deposit(pl, currency.getName(), deposit);
+                        ConfirmWindow window = (ConfirmWindow) menu;
+                        window.close(true);
+                        Text.actionMessage(pl, ChatColor.GREEN + "계좌로 " + deposit + " 을 입금하였습니다.", 40L);
+                    }
+                    @Override
+                    public ItemStack getItem() {
+                        return ItemCreator.of(Material.LIME_STAINED_GLASS_PANE).name("승인").build().make();
+                    }
+                };
+                MenuButton cancelBtn = new MenuButton() {
+                    @Override
+                    public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+                        ConfirmWindow window = (ConfirmWindow) menu;
+                        window.close(false);
+                    }
+                    @Override
+                    public ItemStack getItem() {
+                        return ItemCreator.of(Material.RED_STAINED_GLASS_PANE).name("취소").build().make();
+                    }
+                };
+                inserts.clear();
+                ConfirmWindow.displayTo(player, infoLore, confirmBtn, cancelBtn, insertItems);
             }
             @Override
             public ItemStack getItem() {
@@ -117,6 +157,10 @@ public class AccountDeposit extends MenuStandard implements Listener {
         }
         else if (location == MenuClickLocation.MENU) {
             if (isInlet(slot)) {
+                if (!cursor.getType().equals(Material.AIR) && cursor.getAmount() > 1) {
+                    animateTitle(ChatColor.RED + "Stacked items are not accepted.");
+                    return false;
+                }
                 return !processSlots.contains(slot);
             }
         }
@@ -131,30 +175,29 @@ public class AccountDeposit extends MenuStandard implements Listener {
         }
         else if (isInlet(slot)) {
             switch (action) {
-                case NOTHING:
-                    break;
                 case PICKUP_ALL:
                 case PICKUP_HALF:
                 case PICKUP_SOME:
                 case PICKUP_ONE:
-                    addInsert(player, cursor.clone(), slot);
+                    removeInsert(slot);
                     break;
                 case PLACE_ALL:
-                case PLACE_SOME:
-                case PLACE_ONE:
                     addInsert(player, cursor.clone(), slot);
                     break;
             }
         }
     }
     
+    private void removeInsert(int slot) {
+        inserts.remove(slot);
+    }
+    
     @Override
     public void onMenuClose(Player player, Inventory inv) {
-        List<ItemStack> inserts = getInserts(inv);
-        if (inserts.size() > 0) {
-            HashMap<Integer, ItemStack> map = player.getInventory().addItem(inserts.toArray(new ItemStack[0]));
-            map.forEach((index, item) -> player.getWorld().dropItem(player.getLocation(), item));
-            player.sendMessage("You have cancelled the transaction.");
+        List<ItemStack> insertItems = getInserts(inv);
+        if (!insertItems.isEmpty()) {
+            giveItems(player, insertItems);
+            Text.actionMessage(player, ChatColor.YELLOW + "거래를 취소하셨습니다.", 40L);
         }
         HandlerList.unregisterAll(this);
     }
@@ -189,17 +232,24 @@ public class AccountDeposit extends MenuStandard implements Listener {
         return null;
     }
     
+    private void giveItems(Player player, List<ItemStack> items) {
+        if (items.size() > 0) {
+            HashMap<Integer, ItemStack> map = player.getInventory().addItem(items.toArray(new ItemStack[0]));
+            map.forEach((index, item) -> player.getWorld().dropItem(player.getLocation(), item));
+        }
+    }
+    
     private List<ItemStack> getInserts(Inventory inv) {
-        List<ItemStack> list = new ArrayList<>();
+        List<ItemStack> items = new ArrayList<>();
         for (int i = 0; i < getSize(); i++) {
-            if (isInlet(i)) {
+            if (isInlet(i) && inserts.containsKey(i)) {
                 ItemStack item = inv.getItem(i);
                 if (item != null) {
-                    list.add(item);
+                    items.add(item);
                 }
             }
         }
-        return list;
+        return items;
     }
     
     private boolean isInlet(int slot) {
@@ -207,12 +257,12 @@ public class AccountDeposit extends MenuStandard implements Listener {
     }
     
     private void addInsert(Player player, ItemStack insert, int slot) {
-        if (insert.getType().equals(Material.AIR))
-            return;
-        
         processSlots.add(slot);
         BillFactory.getBillFromItem(insert, (bill) -> {
-            if (!checkItemValid(bill)) {
+            if (checkItemValid(bill)) {
+                inserts.put(slot, bill.getUnit());
+            }
+            else {
                 new BukkitRunnable() {
                     @Override
                     public void run() {

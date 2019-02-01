@@ -7,6 +7,7 @@ import io.github.lazoyoung.endusereconomy.Config;
 import io.github.lazoyoung.endusereconomy.Main;
 import io.github.lazoyoung.endusereconomy.bank.transaction.TransactionType;
 import io.github.lazoyoung.endusereconomy.economy.Currency;
+import io.github.lazoyoung.endusereconomy.util.Text;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -56,7 +57,7 @@ public class BankTable extends Table {
         final String user_ = user.toLowerCase();
         final Callback<Integer, SQLException> insertResult = (key, thrown) -> {
             if (thrown == null) {
-                Main.log(user_ + " deposit " + amount + " to his account in economy: " + currency.toString());
+                Text.log(user_ + " deposit " + amount + " to his account in economy: " + currency.toString());
             }
         };
         new BukkitRunnable() {
@@ -76,7 +77,7 @@ public class BankTable extends Table {
         final String user_ = user.toLowerCase();
         final Callback<Integer, SQLException> insertResult = (key, thrown) -> {
             if (thrown == null) {
-                Main.log(user_ + " withdrawn " + amount + " from his account in economy: " + currency.toString());
+                Text.log(user_ + " withdrawn " + amount + " from his account in economy: " + currency.toString());
             }
         };
         new BukkitRunnable() {
@@ -97,7 +98,7 @@ public class BankTable extends Table {
         final String receiver_ = receiver.toLowerCase();
         final Callback<Integer, SQLException> insertResult = (key, thrown) -> {
             if (thrown == null) {
-                Main.log(sender_ + " transferred " + amount + " to " + receiver_ + " in economy: " + currency.toString());
+                Text.log(sender_ + " transferred " + amount + " to " + receiver_ + " in economy: " + currency.toString());
             }
         };
         new BukkitRunnable() {

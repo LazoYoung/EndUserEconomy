@@ -10,6 +10,7 @@ import io.github.lazoyoung.endusereconomy.database.BillTable;
 import io.github.lazoyoung.endusereconomy.database.Database;
 import io.github.lazoyoung.endusereconomy.economy.Economy;
 import io.github.lazoyoung.endusereconomy.economy.handler.EconomyHandler;
+import io.github.lazoyoung.endusereconomy.util.Text;
 import me.kangarko.ui.UIDesignerAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -24,7 +25,7 @@ import java.util.Arrays;
 
 public class Main extends JavaPlugin {
     
-    static String pluginName;
+    public static String pluginName;
     
     @Override
     public void onEnable() {
@@ -56,26 +57,16 @@ public class Main extends JavaPlugin {
         BankTable bankTable = new BankTable(connector);
         Database.registerTable(Database.BILL_RECORD, billTable);
         Database.registerTable(Database.BANK_TRANSACTION, bankTable);
-        log("Successfully connected to database.");
+        Text.log("Successfully connected to database.");
     }
     
     public static void terminate(@Nonnull Plugin suspender, @Nullable String cause) {
-        log("Plugin is being terminated.", "Suspender: " + suspender.getName() + ", Cause: " + cause);
+        Text.log("Plugin is being terminated.", "Suspender: " + suspender.getName() + ", Cause: " + cause);
         Bukkit.getPluginManager().disablePlugin(Main.getInstance());
     }
     
     public static Plugin getInstance() {
         return JavaPlugin.getPlugin(Main.class);
-    }
-    
-    public static void log(String... message) {
-        String prefix = "[" + pluginName + "] ";
-        Arrays.stream(message).forEachOrdered(string -> getInstance().getServer().getConsoleSender().sendMessage(prefix + string));
-    }
-    
-    public static void log(ChatColor color, String... message) {
-        String prefix = "[" + pluginName + "] ";
-        Arrays.stream(message).forEachOrdered(string -> getInstance().getServer().getConsoleSender().sendMessage(color + prefix + string));
     }
     
     private void initCommands() {
@@ -102,13 +93,13 @@ public class Main extends JavaPlugin {
                 EconomyHandler handler = (EconomyHandler) type.getHandlerClass().newInstance();
                 EconomyHandler.register(type, handler);
                 getServer().getPluginManager().registerEvents((Listener) handler, this);
-                log("Hooked economy: " + pluginName);
+                Text.log("Hooked economy: " + pluginName);
                 return;
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-        log("Failed to load economy: " + pluginName);
+        Text.log("Failed to load economy: " + pluginName);
     }
     
     private boolean isServerCompatible() {
