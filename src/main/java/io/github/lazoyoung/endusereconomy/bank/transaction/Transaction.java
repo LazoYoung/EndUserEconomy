@@ -9,7 +9,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -31,13 +30,6 @@ public abstract class Transaction {
         this.result = result;
         this.date = date;
         this.currency = currency;
-    }
-    
-    public static void getRecordsReversed(String user, Currency currency, int maxCount, Consumer<List<Transaction>> records) {
-        getRecords(user, currency, maxCount, (list) -> {
-            Collections.reverse(list);
-            records.accept(list);
-        });
     }
     
     public static void getRecords(String user, final Currency currency, int maxCount, Consumer<List<Transaction>> records) {

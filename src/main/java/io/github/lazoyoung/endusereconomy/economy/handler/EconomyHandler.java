@@ -25,6 +25,7 @@ public interface EconomyHandler {
     boolean hasAccount(OfflinePlayer player);
     EconomyResponse deposit(OfflinePlayer player, @Nullable String currency, double amount);
     EconomyResponse withdraw(OfflinePlayer player, @Nullable String currency, double amount);
+    EconomyResponse transfer(OfflinePlayer sender, OfflinePlayer recipient, @Nullable String currency, double amount);
     EconomyResponse setBalance(OfflinePlayer player, @Nullable String currency, double amount);
     boolean isValidCurrency(String currency);
 

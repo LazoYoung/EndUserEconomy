@@ -1,6 +1,8 @@
 package io.github.lazoyoung.endusereconomy.command;
 
+import io.github.lazoyoung.endusereconomy.Main;
 import io.github.lazoyoung.endusereconomy.bank.menu.AccountDeposit;
+import io.github.lazoyoung.endusereconomy.bank.menu.AccountTransfer;
 import io.github.lazoyoung.endusereconomy.bank.menu.AccountView;
 import io.github.lazoyoung.endusereconomy.bank.menu.AccountWithdraw;
 import io.github.lazoyoung.endusereconomy.economy.Currency;
@@ -9,6 +11,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -44,7 +47,7 @@ public class AccountCommand extends CommandBase {
                         withdraw(sender);
                         break;
                     case "transfer":
-                        sender.sendMessage("This menu is not ready.");
+                        transfer(sender);
                         break;
                     default:
                         return false;
@@ -61,8 +64,7 @@ public class AccountCommand extends CommandBase {
                     case "withdraw":
                         return false;
                     case "transfer":
-                        sender.sendMessage("This menu is not ready.");
-                        break;
+                        return false;
                     default:
                         return false;
                 }
@@ -81,11 +83,21 @@ public class AccountCommand extends CommandBase {
         if (currency != null) {
             if (target != null) {
                 OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(target);
-                if (targetPlayer.hasPlayedBefore()) {
-                    AccountView.displayTo(viewer, targetPlayer, currency);
-                } else {
-                    sender.sendMessage("That player is unknown in this server.");
-                }
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                if (targetPlayer.hasPlayedBefore()) {
+                                    AccountView.displayTo(viewer, targetPlayer, currency);
+                                } else {
+                                    sender.sendMessage("That player is unknown in this server.");
+                                }
+                            }
+                        }.runTask(Main.getInstance());
+                    }
+                }.runTaskAsynchronously(Main.getInstance());
             } else {
                 AccountView.displayTo(viewer, viewer, currency);
             }
@@ -105,6 +117,14 @@ public class AccountCommand extends CommandBase {
         
         if (currency != null) {
             AccountWithdraw.displayTo((Player) sender, currency);
+        }
+    }
+    
+    private void transfer(CommandSender sender) {
+        Currency currency = getCurrency(sender);
+        
+        if (currency != null) {
+            new AccountTransfer(currency).displayTo((Player) sender);
         }
     }
     

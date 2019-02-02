@@ -17,6 +17,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class AccountWithdraw extends MenuStandard {
     
@@ -24,13 +25,14 @@ public class AccountWithdraw extends MenuStandard {
     private HashMap<Integer,ItemStack> moneyItem; // key: unit, value: item
     private HashMap<Integer,Integer> moneyQty; // key: unit, value: quantity
     private List<Integer> units;
-    private ItemStack infoItem;
+    private ItemStack infoItem, returnItem;
     private HashMap<Integer,ItemStack> plusItem, minusItem;
     
     private AccountWithdraw(Currency currency) {
-        super(AccountHome.getMenu());
+        super(null);
         this.currency = currency;
         this.infoItem = ItemCreator.of(Material.NETHER_STAR).name("클릭하여 인출").build().make();
+        this.returnItem = ItemCreator.of(Material.OAK_DOOR).name("뒤로가기").build().make();
         setSize(27);
         setTitle("계좌 인출");
         initMoneyItems();
@@ -44,6 +46,16 @@ public class AccountWithdraw extends MenuStandard {
     @Override
     protected List<MenuButton> getButtonsToAutoRegister() {
         List<MenuButton> list = new ArrayList<>();
+        MenuButton returnBtn = new MenuButton() {
+            @Override
+            public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+                AccountHome.getMenu().displayTo(player);
+            }
+            @Override
+            public ItemStack getItem() {
+                return returnItem;
+            }
+        };
         MenuButton actionBtn = new MenuButton() {
             @Override
             public void onClickedInMenu(Player player, Menu menu, ClickType click) {
@@ -57,36 +69,19 @@ public class AccountWithdraw extends MenuStandard {
                     }
                     else {
                         String[] infoLore = new String[] { "인출 금액: " + amount, "예상 잔고: " + newBal };
-                        MenuButton confirmBtn = new MenuButton() {
-                            @Override
-                            public void onClickedInMenu(Player player, Menu menu, ClickType click) {
+                        Consumer<Boolean> listener = (confirmed) -> {
+                            if (confirmed) {
                                 eco.withdraw(player, currency.getName(), amount);
                                 giveMoneyItems(player);
-                                player.closeInventory();
-                            }
-                            @Override
-                            public ItemStack getItem() {
-                                return ItemCreator.of(Material.LIME_STAINED_GLASS_PANE).name("승인").build().make();
                             }
                         };
-                        MenuButton cancelBtn = new MenuButton() {
-                            @Override
-                            public void onClickedInMenu(Player player, Menu menu, ClickType click) {
-                                player.closeInventory();
-                            }
-                            @Override
-                            public ItemStack getItem() {
-                                return ItemCreator.of(Material.RED_STAINED_GLASS_PANE).name("취소").build().make();
-                            }
-                        };
-                        ConfirmWindow.displayTo(player, infoLore, confirmBtn, cancelBtn);
+                        ConfirmWindow.displayTo(player, infoLore, listener, null);
                     }
                 }
                 else {
                     animateTitle("Select the amount to withdraw.");
                 }
             }
-            
             @Override
             public ItemStack getItem() {
                 return infoItem;
@@ -109,7 +104,6 @@ public class AccountWithdraw extends MenuStandard {
                         restartMenu(getTitle());
                     }
                 }
-    
                 @Override
                 public ItemStack getItem() {
                     return plusItem.get(unit);
@@ -130,7 +124,6 @@ public class AccountWithdraw extends MenuStandard {
                         restartMenu(getTitle());
                     }
                 }
-    
                 @Override
                 public ItemStack getItem() {
                     return minusItem.get(unit);
@@ -140,6 +133,7 @@ public class AccountWithdraw extends MenuStandard {
             list.add(minusBtn);
         }
         
+        list.add(returnBtn);
         list.add(actionBtn);
         return list;
     }
@@ -203,6 +197,11 @@ public class AccountWithdraw extends MenuStandard {
     @Override
     protected String[] getInfo() {
         return null;
+    }
+    
+    @Override
+    protected boolean addReturnButton() {
+        return false;
     }
     
     private void initMoneyItems() {

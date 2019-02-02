@@ -123,7 +123,7 @@ public class BankTable extends Table {
             @Override
             public void run() {
                 if (currencyName == null) {
-                    builder.append("AND currency IS NULL LIMIT ").append(maxCount).append(";");
+                    builder.append("AND currency IS NULL ORDER BY date DESC LIMIT ").append(maxCount).append(";");
                     executeQuery(callback, builder.toString(), user, user, economy);
                 } else {
                     builder.append("AND currency = ? LIMIT ").append(maxCount).append(";");

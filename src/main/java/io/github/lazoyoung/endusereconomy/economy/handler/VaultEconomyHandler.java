@@ -81,6 +81,22 @@ public class VaultEconomyHandler extends AbstractEconomyHandler implements Liste
     }
     
     @Override
+    public EconomyResponse transfer(OfflinePlayer sender, OfflinePlayer recipient, @Nullable String currency, double amount) {
+        String error;
+        if (api.withdrawPlayer(sender, amount).transactionSuccess()) {
+            if (api.depositPlayer(recipient, amount).transactionSuccess()) {
+                return new EconomyResponse(amount, api.getBalance(sender), EconomyResponse.ResponseType.SUCCESS, null);
+            } else {
+                api.depositPlayer(sender, amount);
+                error = "Recipient is unable to receive the money.";
+            }
+        } else {
+            error = "Sender cannot afford the money to transfer.";
+        }
+        return new EconomyResponse(amount, api.getBalance(sender), EconomyResponse.ResponseType.FAILURE, error);
+    }
+    
+    @Override
     public EconomyResponse setBalance(OfflinePlayer player, @Nullable String currency, double amount) {
         if (hasAccount(player)) {
             double bal = api.getBalance(player);

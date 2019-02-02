@@ -28,7 +28,7 @@ public class AccountRecords extends MenuPagged<Transaction> {
     private AccountRecords(OfflinePlayer user, Currency currency, Iterable<Transaction> pages) {
         super(9*2, AccountHome.getMenu(), pages);
         this.currency = currency;
-        setTitle("Account records of " + user.getName().toUpperCase());
+        setTitle("Records of " + user.getName().toUpperCase());
         registerFields();
     }
     
@@ -36,12 +36,12 @@ public class AccountRecords extends MenuPagged<Transaction> {
         super(9*2, AccountHome.getMenu(), new ArrayList<>());
         this.empty = true;
         this.currency = currency;
-        setTitle("Account records of " + user.getName().toUpperCase());
+        setTitle("Records of " + user.getName().toUpperCase());
         registerFields();
     }
     
     public static void getMenu(OfflinePlayer user, Currency currency, Consumer<AccountRecords> callback) {
-        Transaction.getRecordsReversed(user.getName(), currency, 30, (records) -> {
+        Transaction.getRecords(user.getName(), currency, 54, (records) -> {
             if (records.isEmpty()) {
                 callback.accept(new AccountRecords(user, currency));
             } else {

@@ -79,6 +79,11 @@ public class GemsEconomyHandler extends AbstractEconomyHandler implements Listen
     }
     
     @Override
+    public EconomyResponse transfer(OfflinePlayer sender, OfflinePlayer recipient, @Nullable String currency, double amount) {
+        return new EconomyResponse(amount, api.getBalance(sender.getUniqueId(), api.getCurrency(currency)), EconomyResponse.ResponseType.FAILURE, "Not implemented yet.");
+    }
+    
+    @Override
     public EconomyResponse setBalance(OfflinePlayer player, @Nullable String currency, double amount) {
         if (hasAccount(player)) {
             double bal = getBalance(player, currency);

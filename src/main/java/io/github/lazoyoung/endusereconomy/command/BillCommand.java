@@ -139,7 +139,7 @@ public class BillCommand extends CommandBase {
             case 3: {
                 switch (args[0].toLowerCase()) {
                     case "setitem": {
-                        setItem((Player) sender, targetItem, (int) arguments[0], (String[]) arguments[1]);
+                        setItem((Player) sender, targetItem, (int) arguments[0], new String[] {(String) arguments[1]});
                         break;
                     }
                     case "print":

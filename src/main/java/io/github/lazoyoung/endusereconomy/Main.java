@@ -13,8 +13,9 @@ import io.github.lazoyoung.endusereconomy.economy.handler.EconomyHandler;
 import io.github.lazoyoung.endusereconomy.util.Text;
 import me.kangarko.ui.UIDesignerAPI;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.conversations.ConversationFactory;
+import org.bukkit.conversations.PluginNameConversationPrefix;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -26,6 +27,7 @@ import java.util.Arrays;
 public class Main extends JavaPlugin {
     
     public static String pluginName;
+    private static ConversationFactory convFactory;
     
     @Override
     public void onEnable() {
@@ -35,6 +37,7 @@ public class Main extends JavaPlugin {
         
         try {
             pluginName = getName();
+            initConversation();
             initCommands();
             initDatabase();
             UIDesignerAPI.setPlugin(this);
@@ -69,6 +72,10 @@ public class Main extends JavaPlugin {
         return JavaPlugin.getPlugin(Main.class);
     }
     
+    public static ConversationFactory getConversationFactory() {
+        return convFactory;
+    }
+    
     private void initCommands() {
         BillCommand billExec = new BillCommand();
         EconomyCommand ecoExec = new EconomyCommand();
@@ -100,6 +107,15 @@ public class Main extends JavaPlugin {
             }
         }
         Text.log("Failed to load economy: " + pluginName);
+    }
+    
+    private void initConversation() {
+        convFactory = new ConversationFactory(this)
+                .withPrefix(new PluginNameConversationPrefix(this))
+                .withTimeout(60)
+                .withEscapeSequence("exit")
+                .thatExcludesNonPlayersWithMessage("Only players can do this.")
+                .withModality(false);
     }
     
     private boolean isServerCompatible() {

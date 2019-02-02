@@ -40,7 +40,7 @@ public class AccountView extends MenuStandard {
     @Override
     public void onMenuClick(Player player, int slot, ItemStack clicked) {
         if (clicked.isSimilar(recordsItem)) {
-            AccountRecords.getMenu(player, curr, (menu) -> menu.displayTo(player));
+            AccountRecords.getMenu(user, curr, (menu) -> menu.displayTo(player));
         }
     }
     

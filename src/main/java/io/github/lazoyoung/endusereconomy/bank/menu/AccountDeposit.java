@@ -30,23 +30,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class AccountDeposit extends MenuStandard implements Listener {
     
-    private ItemStack rightSignItem, leftSignItem, infoItem, returnItem;
+    private ItemStack rightSignItem = ItemCreator.of(Material.BLACK_STAINED_GLASS_PANE).name("->").build().make();
+    private ItemStack leftSignItem = ItemCreator.of(Material.BLACK_STAINED_GLASS_PANE).name("<-").build().make();
+    private ItemStack infoItem = ItemCreator.of(Material.NETHER_STAR).name("클릭하여 입금").build().make();
+    private ItemStack returnItem = ItemCreator.of(Material.OAK_DOOR).name("뒤로가기").build().make();
     private Currency currency;
     private List<Integer> processSlots;
     private Map<Integer,Integer> inserts; // key: slot, value: amount
     
     private AccountDeposit(Currency currency) {
         super(null);
-        this.rightSignItem = ItemCreator.of(Material.BLACK_STAINED_GLASS_PANE).name("->").build().make();
-        this.leftSignItem = ItemCreator.of(Material.BLACK_STAINED_GLASS_PANE).name("<-").build().make();
         this.processSlots = new ArrayList<>();
         this.inserts = new HashMap<>();
         this.currency = currency;
-        this.infoItem = ItemCreator.of(Material.NETHER_STAR).name("클릭하여 입금").build().make();
-        this.returnItem = ItemCreator.of(Material.OAK_DOOR).name("뒤로가기").build().make();
         setSize(27);
         setTitle("Deposit to account");
         Bukkit.getPluginManager().registerEvents(this, Main.getInstance());
@@ -103,32 +103,15 @@ public class AccountDeposit extends MenuStandard implements Listener {
                 List<ItemStack> insertItems = getInserts(player.getOpenInventory().getTopInventory());
                 int est = deposit + (int) eco.getBalance(player, currency.getName());
                 String[] infoLore = {"투입 금액: " + sum, "예상 잔고: " + est};
-                MenuButton confirmBtn = new MenuButton() {
-                    @Override
-                    public void onClickedInMenu(Player pl, Menu menu, ClickType click) {
-                        eco.deposit(pl, currency.getName(), deposit);
-                        ConfirmWindow window = (ConfirmWindow) menu;
-                        window.close(true);
-                        Text.actionMessage(pl, ChatColor.GREEN + "계좌로 " + deposit + " 을 입금하였습니다.", 40L);
-                    }
-                    @Override
-                    public ItemStack getItem() {
-                        return ItemCreator.of(Material.LIME_STAINED_GLASS_PANE).name("승인").build().make();
+                Consumer<Boolean> listener = (confirmed) -> {
+                    if (confirmed) {
+                        eco.deposit(player, currency.getName(), deposit);
+                        Text.actionMessage(player, ChatColor.GREEN + "계좌로 " + deposit + " 을 입금하였습니다.", 40L);
                     }
                 };
-                MenuButton cancelBtn = new MenuButton() {
-                    @Override
-                    public void onClickedInMenu(Player player, Menu menu, ClickType click) {
-                        ConfirmWindow window = (ConfirmWindow) menu;
-                        window.close(false);
-                    }
-                    @Override
-                    public ItemStack getItem() {
-                        return ItemCreator.of(Material.RED_STAINED_GLASS_PANE).name("취소").build().make();
-                    }
-                };
+                
                 inserts.clear();
-                ConfirmWindow.displayTo(player, infoLore, confirmBtn, cancelBtn, insertItems);
+                ConfirmWindow.displayTo(player, infoLore, listener, insertItems);
             }
             @Override
             public ItemStack getItem() {
