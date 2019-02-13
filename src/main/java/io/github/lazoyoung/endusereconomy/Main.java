@@ -1,6 +1,5 @@
 package io.github.lazoyoung.endusereconomy;
 
-import com.zaxxer.hikari.HikariConfig;
 import io.github.lazoyoung.database_util.Connector;
 import io.github.lazoyoung.endusereconomy.command.AccountCommand;
 import io.github.lazoyoung.endusereconomy.command.BillCommand;
@@ -28,6 +27,7 @@ public class Main extends JavaPlugin {
     
     public static String pluginName;
     private static ConversationFactory convFactory;
+    private Connector connector;
     
     @Override
     public void onEnable() {
@@ -51,11 +51,11 @@ public class Main extends JavaPlugin {
     @Override
     public void onDisable() {
         Arrays.stream(Database.values()).forEach(Database::shutdown);
+        connector.close();
     }
     
     private void initDatabase() {
-        HikariConfig config = Database.getHikariConfig();
-        Connector connector = new Connector(Bukkit.getLogger(), config);
+        connector = new Connector(Bukkit.getLogger(), Database.getHikariConfig());
         BillTable billTable = new BillTable(connector);
         BankTable bankTable = new BankTable(connector);
         Database.registerTable(Database.BILL_RECORD, billTable);

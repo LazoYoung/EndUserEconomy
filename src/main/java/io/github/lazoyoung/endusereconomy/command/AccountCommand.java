@@ -1,6 +1,5 @@
 package io.github.lazoyoung.endusereconomy.command;
 
-import io.github.lazoyoung.endusereconomy.Main;
 import io.github.lazoyoung.endusereconomy.bank.menu.AccountDeposit;
 import io.github.lazoyoung.endusereconomy.bank.menu.AccountTransfer;
 import io.github.lazoyoung.endusereconomy.bank.menu.AccountView;
@@ -11,7 +10,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -83,21 +81,11 @@ public class AccountCommand extends CommandBase {
         if (currency != null) {
             if (target != null) {
                 OfflinePlayer targetPlayer = Bukkit.getOfflinePlayer(target);
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-                        new BukkitRunnable() {
-                            @Override
-                            public void run() {
-                                if (targetPlayer.hasPlayedBefore()) {
-                                    AccountView.displayTo(viewer, targetPlayer, currency);
-                                } else {
-                                    sender.sendMessage("That player is unknown in this server.");
-                                }
-                            }
-                        }.runTask(Main.getInstance());
-                    }
-                }.runTaskAsynchronously(Main.getInstance());
+                if (targetPlayer.hasPlayedBefore()) {
+                    AccountView.displayTo(viewer, targetPlayer, currency);
+                } else {
+                    sender.sendMessage("That player is unknown in this server.");
+                }
             } else {
                 AccountView.displayTo(viewer, viewer, currency);
             }
